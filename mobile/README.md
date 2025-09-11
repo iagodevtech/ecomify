@@ -1,56 +1,136 @@
 # Ecomify Mobile App
 
-Aplicativo mobile do Ecomify - Ecommerce Futurístico para produtos digitais e tecnologia.
+O aplicativo móvel do Ecomify - uma plataforma de e-commerce futurística para produtos de tecnologia.
 
 ## 🚀 Funcionalidades
 
-- ✅ Design futurístico com tema cyberpunk
-- ✅ Sistema de autenticação completo
-- ✅ Carrinho de compras sincronizado
-- ✅ Navegação intuitiva com tabs e drawer
-- ✅ Tema personalizável (light/dark/cyber)
-- ✅ Integração com Supabase
-- ✅ React Query para gerenciamento de estado
-- ✅ Notificações push (em desenvolvimento)
-- ✅ Biometria (em desenvolvimento)
+### 📱 **Interface Futurística**
+- Design cyberpunk com cores neon
+- Animações fluidas e transições suaves
+- Tema escuro com acentos coloridos
+- Interface adaptativa para diferentes tamanhos de tela
+
+### 🔐 **Autenticação Avançada**
+- Login/Registro com Supabase
+- Autenticação biométrica (Face ID/Touch ID)
+- Autenticação de dois fatores
+- Recuperação de senha segura
+
+### 🛒 **E-commerce Completo**
+- Catálogo de produtos com filtros avançados
+- Carrinho de compras sincronizado
+- Sistema de favoritos
+- Histórico de pedidos
+- Rastreamento de entregas
+
+### 💳 **Pagamentos Seguros**
+- PIX instantâneo
+- Cartão de crédito/débito
+- Boleto bancário
+- Integração com Stripe
+- Pagamentos com biometria
+
+### 🔔 **Notificações Inteligentes**
+- Push notifications personalizadas
+- Alertas de preço
+- Notificações de pedidos
+- Lembretes de carrinho abandonado
+
+### 📊 **Analytics e Insights**
+- Dashboard personalizado
+- Histórico de compras
+- Recomendações baseadas em IA
+- Análise de gastos
 
 ## 🛠️ Tecnologias
 
-- **Framework**: React Native com Expo
-- **Navegação**: React Navigation 6
-- **Estado**: React Query, Context API
-- **Backend**: Supabase
-- **UI**: React Native + Expo Vector Icons
-- **Animações**: React Native Reanimated
-- **Armazenamento**: AsyncStorage
+- **React Native** - Framework principal
+- **Expo** - Plataforma de desenvolvimento
+- **TypeScript** - Tipagem estática
+- **Supabase** - Backend e autenticação
+- **Stripe** - Processamento de pagamentos
+- **React Navigation** - Navegação
+- **React Query** - Gerenciamento de estado
+- **Expo Notifications** - Push notifications
+- **Expo Local Authentication** - Biometria
 
-## 📦 Instalação
+## 📋 Pré-requisitos
 
-1. Navegue para o diretório mobile:
+- Node.js 18+
+- npm ou yarn
+- Expo CLI
+- EAS CLI (para builds)
+- Conta no Expo
+- Conta no Supabase
+- Conta no Stripe
+
+## 🚀 Instalação
+
+1. **Clone o repositório**
 ```bash
-cd mobile
+git clone https://github.com/iagodevtech/ecomify.git
+cd ecomify/mobile
 ```
 
-2. Instale as dependências:
+2. **Instale as dependências**
 ```bash
 npm install
+# ou
+yarn install
 ```
 
-3. Configure as variáveis de ambiente:
+3. **Configure as variáveis de ambiente**
 ```bash
-# Crie um arquivo .env na pasta mobile
-EXPO_PUBLIC_SUPABASE_URL=your_supabase_url_here
-EXPO_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key_here
+cp .env.example .env.local
 ```
 
-4. Execute o projeto:
+Edite o arquivo `.env.local` com suas credenciais:
+```env
+EXPO_PUBLIC_SUPABASE_URL=your_supabase_url
+EXPO_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key
+EXPO_PUBLIC_API_URL=https://your-api-url.com
+```
+
+4. **Inicie o servidor de desenvolvimento**
 ```bash
 npm start
+# ou
+yarn start
 ```
 
-5. Use o Expo Go no seu celular para testar
+## 📱 Executando o App
 
-## 📱 Estrutura do Projeto
+### Desenvolvimento
+```bash
+# iOS Simulator
+npm run ios
+
+# Android Emulator
+npm run android
+
+# Web
+npm run web
+```
+
+### Build para Produção
+
+#### Android
+```bash
+# Build APK
+eas build --platform android --profile preview
+
+# Build AAB (Google Play)
+eas build --platform android --profile production
+```
+
+#### iOS
+```bash
+# Build para TestFlight
+eas build --platform ios --profile production
+```
+
+## 🏗️ Estrutura do Projeto
 
 ```
 mobile/
@@ -58,59 +138,110 @@ mobile/
 │   ├── components/          # Componentes reutilizáveis
 │   ├── navigation/          # Configuração de navegação
 │   ├── providers/           # Context providers
-│   ├── screens/             # Telas da aplicação
-│   ├── lib/                 # Configurações e utilitários
-│   ├── types/               # Tipos TypeScript
-│   └── utils/               # Funções utilitárias
+│   ├── screens/             # Telas do app
+│   ├── lib/                 # Utilitários e configurações
+│   ├── types/               # Definições TypeScript
+│   └── utils/               # Funções auxiliares
+├── assets/                  # Imagens, fontes, etc.
 ├── App.tsx                  # Componente principal
 ├── app.json                 # Configuração do Expo
+├── eas.json                 # Configuração do EAS Build
 └── package.json             # Dependências
 ```
 
-## 🎨 Design System
+## 🔧 Configuração
 
-- **Cores**: Neon blue, purple, green, pink
-- **Tipografia**: System fonts
-- **Efeitos**: Gradientes, sombras, bordas arredondadas
-- **Animações**: Transições suaves, gestos
+### Supabase
+1. Crie um projeto no [Supabase](https://supabase.com)
+2. Configure as tabelas necessárias
+3. Ative a autenticação
+4. Configure as políticas RLS
 
-## 🔐 Autenticação
+### Stripe
+1. Crie uma conta no [Stripe](https://stripe.com)
+2. Obtenha as chaves de API
+3. Configure webhooks
+4. Teste os pagamentos
 
-- Email/senha
-- Google OAuth
-- Facebook OAuth
-- Apple OAuth
-- Recuperação de senha
+### Expo
+1. Crie uma conta no [Expo](https://expo.dev)
+2. Configure o projeto EAS
+3. Configure as credenciais de build
+4. Configure as stores (App Store/Google Play)
 
-## 🛒 E-commerce
+## 📦 Scripts Disponíveis
 
-- Catálogo de produtos
-- Carrinho persistente
-- Favoritos
-- Histórico de pedidos
-- Alertas de preço
-- Notificações push
+```bash
+# Desenvolvimento
+npm start                    # Inicia o servidor de desenvolvimento
+npm run ios                  # Executa no iOS
+npm run android              # Executa no Android
+npm run web                  # Executa no navegador
 
-## 📊 Navegação
+# Build
+npm run build:android        # Build para Android
+npm run build:ios            # Build para iOS
 
-- **Bottom Tabs**: Home, Buscar, Carrinho, Perfil
-- **Drawer**: Dashboard, Alertas, Favoritos, Pedidos, Configurações
-- **Stack**: Detalhes de produto, Categoria
+# Deploy
+npm run submit:android       # Submete para Google Play
+npm run submit:ios           # Submete para App Store
+```
 
-## 🔄 Sincronização
+## 🎨 Temas
 
-- Carrinho sincronizado entre web e mobile
-- Dados do usuário em tempo real
-- Notificações push para alertas de preço
+O app suporta três temas:
+- **Light** - Tema claro tradicional
+- **Dark** - Tema escuro moderno
+- **Cyber** - Tema futurístico com cores neon
 
-## 📈 Próximos Passos
+## 🔐 Segurança
 
-- [ ] Implementar notificações push
-- [ ] Adicionar biometria para login
-- [ ] Implementar realidade aumentada
-- [ ] Adicionar modo offline
-- [ ] Implementar geolocalização
-- [ ] Adicionar chat de suporte
+- Autenticação com Supabase
+- Armazenamento seguro com Expo Secure Store
+- Biometria para pagamentos
+- Criptografia de dados sensíveis
+- Validação de entrada
+- Sanitização de dados
+
+## 📊 Performance
+
+- Lazy loading de telas
+- Cache inteligente com React Query
+- Otimização de imagens
+- Bundle splitting
+- Animações otimizadas
+
+## 🧪 Testes
+
+```bash
+# Testes unitários
+npm test
+
+# Testes de integração
+npm run test:integration
+
+# Testes E2E
+npm run test:e2e
+```
+
+## 🚀 Deploy
+
+### Google Play Store
+1. Configure as credenciais no EAS
+2. Execute `eas build --platform android --profile production`
+3. Execute `eas submit --platform android`
+
+### Apple App Store
+1. Configure as credenciais no EAS
+2. Execute `eas build --platform ios --profile production`
+3. Execute `eas submit --platform ios`
+
+## 📈 Monitoramento
+
+- **Crashlytics** - Relatórios de crash
+- **Analytics** - Métricas de uso
+- **Performance** - Monitoramento de performance
+- **Logs** - Logs estruturados
 
 ## 🤝 Contribuição
 
@@ -122,10 +253,35 @@ mobile/
 
 ## 📄 Licença
 
-Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](../../LICENSE) para mais detalhes.
+Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](../LICENSE) para mais detalhes.
 
-## 👨‍💻 Autor
+## 🆘 Suporte
 
-**Iago DevTech**
-- GitHub: [@iagodevtech](https://github.com/iagodevtech)
-- LinkedIn: [Iago DevTech](https://linkedin.com/in/iagodevtech)
+- **Documentação**: [docs.ecomify.com](https://docs.ecomify.com)
+- **Issues**: [GitHub Issues](https://github.com/iagodevtech/ecomify/issues)
+- **Discord**: [Ecomify Community](https://discord.gg/ecomify)
+- **Email**: support@ecomify.com
+
+## 🎯 Roadmap
+
+### v1.1
+- [ ] Realidade aumentada para produtos
+- [ ] Chat com suporte
+- [ ] Programa de fidelidade
+- [ ] Integração com redes sociais
+
+### v1.2
+- [ ] Modo offline
+- [ ] Sincronização em tempo real
+- [ ] Widgets para iOS/Android
+- [ ] Apple Pay / Google Pay
+
+### v2.0
+- [ ] IA para recomendações
+- [ ] Voice shopping
+- [ ] Blockchain para autenticidade
+- [ ] Metaverso integration
+
+---
+
+**Desenvolvido com ❤️ pela equipe Ecomify**

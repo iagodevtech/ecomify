@@ -61,17 +61,29 @@ const themes = {
     error: '#ef4444',
   },
   cyber: {
-    primary: '#00f5ff',
-    secondary: '#ff0080',
-    background: '#0a0a0a',
-    surface: '#1a1a1a',
-    text: '#00f5ff',
-    textSecondary: '#ff0080',
-    border: '#00f5ff',
-    accent: '#00ff88',
-    success: '#00ff88',
-    warning: '#ffff00',
-    error: '#ff0080',
+    primary: '#00f5ff', // Neon Blue
+    secondary: '#ff0080', // Neon Pink
+    background: '#0a0a0a', // Dark 900
+    surface: '#1a1a1a', // Dark 800
+    text: '#ffffff', // White
+    textSecondary: '#00f5ff', // Neon Blue
+    border: '#00f5ff', // Neon Blue
+    accent: '#00ff88', // Neon Green
+    success: '#00ff88', // Neon Green
+    warning: '#ffff00', // Neon Yellow
+    error: '#ff0080', // Neon Pink
+    neonBlue: '#00f5ff',
+    neonPurple: '#8b5cf6',
+    neonPink: '#ff0080',
+    neonGreen: '#00ff88',
+    neonYellow: '#ffff00',
+    cyber300: '#00f5ff',
+    cyber400: '#ff0080',
+    cyber500: '#8b5cf6',
+    cyber600: '#00ff88',
+    cyber700: '#ffff00',
+    cyber800: '#1a1a1a',
+    cyber900: '#0a0a0a',
   },
 };
 

@@ -17,7 +17,13 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.ecomify.mobile",
-      "buildNumber": "1.0.0"
+      "buildNumber": "1.0.0",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Este app precisa acessar a câmera para escanear códigos QR e tirar fotos de produtos.",
+        "NSMicrophoneUsageDescription": "Este app precisa acessar o microfone para funcionalidades de áudio.",
+        "NSFaceIDUsageDescription": "Este app usa Face ID para autenticação segura.",
+        "NSLocationWhenInUseUsageDescription": "Este app precisa acessar sua localização para encontrar lojas próximas."
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -25,7 +31,18 @@
         "backgroundColor": "#0a0a0a"
       },
       "package": "com.ecomify.mobile",
-      "versionCode": 1
+      "versionCode": 1,
+      "permissions": [
+        "CAMERA",
+        "RECORD_AUDIO",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "USE_BIOMETRIC",
+        "USE_FINGERPRINT",
+        "VIBRATE",
+        "INTERNET",
+        "ACCESS_NETWORK_STATE"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png",
@@ -34,6 +51,8 @@
     "plugins": [
       "expo-notifications",
       "expo-local-authentication",
+      "expo-secure-store",
+      "expo-device",
       [
         "expo-build-properties",
         {
@@ -52,6 +71,7 @@
       "androidMode": "default",
       "androidCollapsedTitle": "Ecomify"
     },
+    "scheme": "ecomify",
     "extra": {
       "eas": {
         "projectId": "your-project-id-here"
