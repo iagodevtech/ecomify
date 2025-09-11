@@ -1,589 +1,488 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { 
   User, 
-  ShoppingBag, 
+  Package, 
   Heart, 
-  Eye, 
-  TrendingUp, 
-  TrendingDown,
-  DollarSign,
-  Package,
+  Bell, 
+  Settings, 
+  CreditCard, 
+  MapPin, 
+  Shield,
+  TrendingUp,
+  ShoppingCart,
+  Eye,
   Star,
-  Clock,
-  MapPin,
-  CreditCard,
-  Bell,
-  Settings,
-  Download,
-  Filter,
   Calendar,
+  Clock,
+  Zap,
+  Award,
   BarChart3,
   PieChart,
   Activity,
-  Target,
-  Zap,
-  Award,
-  Gift,
-  Truck,
-  Shield,
-  Smartphone,
-  Laptop,
-  Headphones
+  ArrowUpRight,
+  ArrowDownRight
 } from 'lucide-react'
-import { AppLayout } from '@/components/layout/app-layout'
+import { Header } from '@/components/layout/header'
+import { Footer } from '@/components/layout/footer'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { formatPrice } from '@/lib/utils'
-import { AdvancedAnalytics } from '@/components/analytics/advanced-analytics'
-import { SmartNotifications } from '@/components/notifications/smart-notifications'
-import { AdvancedSettings } from '@/components/settings/advanced-settings'
+import { formatPrice } from '@/lib/stripe'
 
-// Mock data - in real app this would come from API
+// Mock data - em produção viria do contexto/API
 const userStats = {
-  totalOrders: 24,
-  totalSpent: 45680,
-  averageOrderValue: 1903,
-  favoriteCategories: [
-    { name: 'Laptops', count: 8, percentage: 33 },
-    { name: 'Smartphones', count: 6, percentage: 25 },
-    { name: 'Áudio', count: 4, percentage: 17 },
-    { name: 'Gaming', count: 3, percentage: 12 },
-    { name: 'Outros', count: 3, percentage: 13 }
-  ],
-  monthlySpending: [
-    { month: 'Jan', amount: 3200 },
-    { month: 'Fev', amount: 2800 },
-    { month: 'Mar', amount: 4200 },
-    { month: 'Abr', amount: 3800 },
-    { month: 'Mai', amount: 5100 },
-    { month: 'Jun', amount: 4800 }
-  ],
-  recentActivity: [
-    { type: 'order', message: 'Pedido #ECM2024001 entregue', time: '2 horas atrás', icon: Package },
-    { type: 'review', message: 'Avaliação de 5 estrelas para MacBook Pro', time: '1 dia atrás', icon: Star },
-    { type: 'wishlist', message: 'iPhone 15 Pro adicionado aos favoritos', time: '2 dias atrás', icon: Heart },
-    { type: 'price_alert', message: 'Alerta de preço: Sony WH-1000XM5', time: '3 dias atrás', icon: Bell }
-  ]
+  totalOrders: 12,
+  totalSpent: 45600,
+  favoriteItems: 8,
+  reviewsWritten: 5,
+  memberSince: '2023-06-15'
 }
 
 const recentOrders = [
   {
-    id: 'ECM2024001',
+    id: 'EC202401150001',
     date: '2024-01-15',
     status: 'delivered',
     total: 15999,
-    items: ['MacBook Pro M3 Max'],
-    tracking: 'BR123456789'
+    items: 1,
+    product: 'MacBook Pro 16" M3 Max'
   },
   {
-    id: 'ECM2024002',
+    id: 'EC202401100002',
     date: '2024-01-10',
     status: 'shipped',
     total: 17998,
-    items: ['iPhone 15 Pro Max', 'AirPods Pro'],
-    tracking: 'BR987654321'
+    items: 2,
+    product: 'iPhone 15 Pro Max'
   },
   {
-    id: 'ECM2024003',
+    id: 'EC202401050003',
     date: '2024-01-05',
     status: 'processing',
-    total: 8999,
-    items: ['Sony WH-1000XM5'],
-    tracking: null
+    total: 7999,
+    items: 1,
+    product: 'Samsung Galaxy S24 Ultra'
   }
 ]
 
 const wishlistItems = [
   {
     id: '1',
-    name: 'RTX 4090 Gaming PC',
-    price: 18999,
-    originalPrice: 21999,
-    image: '/images/products/rtx-4090-pc.jpg',
-    addedAt: '2024-01-12',
-    priceHistory: [21999, 19999, 18999]
+    name: 'Dell XPS 15',
+    price: 12999,
+    image: '/images/products/dell-xps.jpg',
+    addedDate: '2024-01-14'
   },
   {
     id: '2',
-    name: 'Samsung Odyssey G9',
-    price: 3999,
-    originalPrice: 4499,
-    image: '/images/products/samsung-g9.jpg',
-    addedAt: '2024-01-08',
-    priceHistory: [4499, 4299, 3999]
-  },
-  {
-    id: '3',
-    name: 'DJI Air 3 Drone',
-    price: 5999,
-    originalPrice: 6999,
-    image: '/images/products/dji-air3.jpg',
-    addedAt: '2024-01-03',
-    priceHistory: [6999, 6499, 5999]
+    name: 'AirPods Pro 2',
+    price: 2499,
+    image: '/images/products/airpods-pro.jpg',
+    addedDate: '2024-01-12'
   }
 ]
 
-const priceAlerts = [
+const notifications = [
   {
     id: '1',
-    productName: 'MacBook Pro M3 Max',
-    currentPrice: 15999,
-    targetPrice: 14000,
-    isActive: true,
-    createdAt: '2024-01-10'
+    type: 'order',
+    title: 'Pedido entregue!',
+    message: 'Seu MacBook Pro foi entregue com sucesso.',
+    date: '2024-01-15T14:30:00Z',
+    read: false
   },
   {
     id: '2',
-    productName: 'iPhone 15 Pro Max',
-    currentPrice: 8999,
-    targetPrice: 8000,
-    isActive: true,
-    createdAt: '2024-01-08'
+    type: 'promotion',
+    title: 'Oferta especial!',
+    message: '20% de desconto em todos os smartphones.',
+    date: '2024-01-14T10:00:00Z',
+    read: true
   },
   {
     id: '3',
-    productName: 'Sony WH-1000XM5',
-    currentPrice: 1299,
-    targetPrice: 1000,
-    isActive: false,
-    createdAt: '2024-01-05'
+    type: 'review',
+    title: 'Avalie sua compra',
+    message: 'Que tal avaliar seu iPhone 15 Pro Max?',
+    date: '2024-01-12T16:45:00Z',
+    read: true
   }
+]
+
+const quickActions = [
+  { name: 'Meus Pedidos', icon: Package, href: '/meus-pedidos', color: 'text-neon-blue' },
+  { name: 'Favoritos', icon: Heart, href: '/favoritos', color: 'text-neon-pink' },
+  { name: 'Endereços', icon: MapPin, href: '/enderecos', color: 'text-neon-green' },
+  { name: 'Pagamentos', icon: CreditCard, href: '/pagamentos', color: 'text-neon-purple' },
+  { name: 'Notificações', icon: Bell, href: '/notificacoes', color: 'text-neon-yellow' },
+  { name: 'Configurações', icon: Settings, href: '/configuracoes', color: 'text-cyber-400' }
 ]
 
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState('overview')
-  const [timeRange, setTimeRange] = useState('6m')
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'delivered':
+        return 'bg-neon-green/20 text-neon-green border-neon-green/30'
+      case 'shipped':
+        return 'bg-neon-blue/20 text-neon-blue border-neon-blue/30'
+      case 'processing':
+        return 'bg-neon-yellow/20 text-neon-yellow border-neon-yellow/30'
+      default:
+        return 'bg-cyber-400/20 text-cyber-400 border-cyber-400/30'
+    }
+  }
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'delivered':
+        return 'Entregue'
+      case 'shipped':
+        return 'Enviado'
+      case 'processing':
+        return 'Processando'
+      default:
+        return status
+    }
+  }
 
   const tabs = [
     { id: 'overview', name: 'Visão Geral', icon: BarChart3 },
     { id: 'orders', name: 'Pedidos', icon: Package },
     { id: 'wishlist', name: 'Favoritos', icon: Heart },
-    { id: 'alerts', name: 'Alertas', icon: Bell },
-    { id: 'analytics', name: 'Analytics', icon: Activity },
-    { id: 'notifications', name: 'Notificações', icon: Bell },
-    { id: 'settings', name: 'Configurações', icon: Settings }
+    { id: 'notifications', name: 'Notificações', icon: Bell }
   ]
 
   return (
-    <AppLayout>
-      <div className="min-h-screen bg-dark-900 pt-16 lg:pt-20">
-        <div className="container mx-auto px-4 py-8">
-          {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-4xl font-bold font-cyber mb-4">
-              <span className="cyber-text bg-gradient-to-r from-neon-blue to-neon-purple bg-clip-text text-transparent">
-                Dashboard
-              </span>
-            </h1>
-            <p className="text-cyber-400">
-              Gerencie sua conta e acompanhe suas atividades
-            </p>
-          </div>
-
-          {/* Quick Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="bg-dark-800/50 backdrop-blur-sm border border-cyber-500/30 rounded-2xl p-6"
-            >
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-neon-blue to-cyber-600 flex items-center justify-center">
-                  <ShoppingBag className="w-6 h-6 text-white" />
-                </div>
-                <Badge className="bg-neon-green/20 text-neon-green border-neon-green/50">
-                  +12%
-                </Badge>
-              </div>
-              <h3 className="text-2xl font-bold text-white mb-1">{userStats.totalOrders}</h3>
-              <p className="text-cyber-400 text-sm">Pedidos Totais</p>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="bg-dark-800/50 backdrop-blur-sm border border-cyber-500/30 rounded-2xl p-6"
-            >
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-neon-green to-cyber-600 flex items-center justify-center">
-                  <DollarSign className="w-6 h-6 text-white" />
-                </div>
-                <Badge className="bg-neon-green/20 text-neon-green border-neon-green/50">
-                  +8%
-                </Badge>
-              </div>
-              <h3 className="text-2xl font-bold text-white mb-1">{formatPrice(userStats.totalSpent)}</h3>
-              <p className="text-cyber-400 text-sm">Total Gasto</p>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="bg-dark-800/50 backdrop-blur-sm border border-cyber-500/30 rounded-2xl p-6"
-            >
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-neon-purple to-cyber-600 flex items-center justify-center">
-                  <TrendingUp className="w-6 h-6 text-white" />
-                </div>
-                <Badge className="bg-neon-green/20 text-neon-green border-neon-green/50">
-                  +5%
-                </Badge>
-              </div>
-              <h3 className="text-2xl font-bold text-white mb-1">{formatPrice(userStats.averageOrderValue)}</h3>
-              <p className="text-cyber-400 text-sm">Ticket Médio</p>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-              className="bg-dark-800/50 backdrop-blur-sm border border-cyber-500/30 rounded-2xl p-6"
-            >
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-neon-pink to-cyber-600 flex items-center justify-center">
-                  <Heart className="w-6 h-6 text-white" />
-                </div>
-                <Badge className="bg-neon-pink/20 text-neon-pink border-neon-pink/50">
-                  {wishlistItems.length}
-                </Badge>
-              </div>
-              <h3 className="text-2xl font-bold text-white mb-1">{wishlistItems.length}</h3>
-              <p className="text-cyber-400 text-sm">Favoritos</p>
-            </motion.div>
-          </div>
-
-          <div className="grid lg:grid-cols-4 gap-8">
-            {/* Sidebar Navigation */}
-            <div className="lg:col-span-1">
-              <div className="bg-dark-800/50 backdrop-blur-sm border border-cyber-500/30 rounded-2xl p-6 sticky top-24">
-                <h2 className="text-lg font-bold text-white mb-6">Menu</h2>
-                <nav className="space-y-2">
-                  {tabs.map((tab) => (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveTab(tab.id)}
-                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-all ${
-                        activeTab === tab.id
-                          ? 'bg-neon-blue/20 text-neon-blue border border-neon-blue/50'
-                          : 'text-cyber-400 hover:text-white hover:bg-cyber-800/50'
-                      }`}
-                    >
-                      <tab.icon className="w-5 h-5" />
-                      <span className="font-medium">{tab.name}</span>
-                    </button>
-                  ))}
-                </nav>
-
-                {/* Quick Actions */}
-                <div className="mt-8 pt-6 border-t border-cyber-700">
-                  <h3 className="text-cyber-300 font-medium mb-4">Ações Rápidas</h3>
-                  <div className="space-y-2">
-                    <Button variant="outline" className="w-full border-cyber-500 text-cyber-400 hover:border-neon-blue hover:text-neon-blue">
-                      <Settings className="w-4 h-4 mr-2" />
-                      Configurações
-                    </Button>
-                    <Button variant="outline" className="w-full border-cyber-500 text-cyber-400 hover:border-neon-green hover:text-neon-green">
-                      <Download className="w-4 h-4 mr-2" />
-                      Exportar Dados
-                    </Button>
-                  </div>
-                </div>
-              </div>
+    <div className="min-h-screen bg-dark-900">
+      <Header />
+      
+      {/* Hero Section */}
+      <section className="pt-24 pb-8 bg-gradient-to-br from-dark-900 via-dark-800 to-dark-900">
+        <div className="container mx-auto px-4">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="flex items-center gap-4 mb-6"
+          >
+            <div className="w-16 h-16 bg-gradient-to-br from-neon-blue to-neon-purple rounded-full flex items-center justify-center">
+              <User className="w-8 h-8 text-white" />
             </div>
-
-            {/* Main Content */}
-            <div className="lg:col-span-3">
-              {/* Overview Tab */}
-              {activeTab === 'overview' && (
-                <div className="space-y-8">
-                  {/* Spending Chart */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="bg-dark-800/50 backdrop-blur-sm border border-cyber-500/30 rounded-2xl p-6"
-                  >
-                    <div className="flex items-center justify-between mb-6">
-                      <h2 className="text-xl font-bold text-white">Gastos Mensais</h2>
-                      <div className="flex items-center gap-2">
-                        <select
-                          value={timeRange}
-                          onChange={(e) => setTimeRange(e.target.value)}
-                          className="px-3 py-2 bg-dark-700/50 border border-cyber-500/30 rounded-lg text-white text-sm focus:border-neon-blue focus:outline-none"
-                        >
-                          <option value="3m">3 meses</option>
-                          <option value="6m">6 meses</option>
-                          <option value="1y">1 ano</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div className="h-64 flex items-end justify-between gap-2">
-                      {userStats.monthlySpending.map((item, index) => (
-                        <div key={item.month} className="flex-1 flex flex-col items-center">
-                          <div
-                            className="w-full bg-gradient-to-t from-neon-blue to-neon-purple rounded-t-lg transition-all hover:opacity-80"
-                            style={{ height: `${(item.amount / 6000) * 200}px` }}
-                          />
-                          <span className="text-cyber-400 text-xs mt-2">{item.month}</span>
-                          <span className="text-white text-xs font-medium">{formatPrice(item.amount)}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </motion.div>
-
-                  {/* Categories */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                    className="bg-dark-800/50 backdrop-blur-sm border border-cyber-500/30 rounded-2xl p-6"
-                  >
-                    <h2 className="text-xl font-bold text-white mb-6">Categorias Favoritas</h2>
-                    <div className="space-y-4">
-                      {userStats.favoriteCategories.map((category, index) => (
-                        <div key={category.name} className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-neon-blue to-neon-purple flex items-center justify-center">
-                              {category.name === 'Laptops' && <Laptop className="w-4 h-4 text-white" />}
-                              {category.name === 'Smartphones' && <Smartphone className="w-4 h-4 text-white" />}
-                              {category.name === 'Áudio' && <Headphones className="w-4 h-4 text-white" />}
-                              {category.name === 'Gaming' && <Zap className="w-4 h-4 text-white" />}
-                              {category.name === 'Outros' && <Package className="w-4 h-4 text-white" />}
-                            </div>
-                            <span className="text-white font-medium">{category.name}</span>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <div className="w-24 h-2 bg-cyber-700 rounded-full overflow-hidden">
-                              <div
-                                className="h-full bg-gradient-to-r from-neon-blue to-neon-purple transition-all"
-                                style={{ width: `${category.percentage}%` }}
-                              />
-                            </div>
-                            <span className="text-cyber-400 text-sm w-12 text-right">{category.count}</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </motion.div>
-
-                  {/* Recent Activity */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                    className="bg-dark-800/50 backdrop-blur-sm border border-cyber-500/30 rounded-2xl p-6"
-                  >
-                    <h2 className="text-xl font-bold text-white mb-6">Atividade Recente</h2>
-                    <div className="space-y-4">
-                      {userStats.recentActivity.map((activity, index) => (
-                        <div key={index} className="flex items-center gap-4 p-4 bg-dark-700/30 rounded-lg">
-                          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-neon-blue to-neon-purple flex items-center justify-center">
-                            <activity.icon className="w-5 h-5 text-white" />
-                          </div>
-                          <div className="flex-1">
-                            <p className="text-white font-medium">{activity.message}</p>
-                            <p className="text-cyber-400 text-sm">{activity.time}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </motion.div>
-                </div>
-              )}
-
-              {/* Orders Tab */}
-              {activeTab === 'orders' && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="bg-dark-800/50 backdrop-blur-sm border border-cyber-500/30 rounded-2xl p-6"
-                >
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-xl font-bold text-white">Pedidos Recentes</h2>
-                    <Button className="cyber-button bg-gradient-to-r from-neon-blue to-neon-purple text-white">
-                      Ver Todos
-                    </Button>
-                  </div>
-
-                  <div className="space-y-4">
-                    {recentOrders.map((order) => (
-                      <div key={order.id} className="p-4 bg-dark-700/30 rounded-lg border border-cyber-500/20">
-                        <div className="flex items-center justify-between mb-3">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-neon-blue to-neon-purple flex items-center justify-center">
-                              <Package className="w-5 h-5 text-white" />
-                            </div>
-                            <div>
-                              <h3 className="text-white font-bold">{order.id}</h3>
-                              <p className="text-cyber-400 text-sm">{order.date}</p>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-white font-bold">{formatPrice(order.total)}</p>
-                            <Badge className={`text-xs ${
-                              order.status === 'delivered' ? 'bg-neon-green/20 text-neon-green border-neon-green/50' :
-                              order.status === 'shipped' ? 'bg-neon-blue/20 text-neon-blue border-neon-blue/50' :
-                              'bg-neon-orange/20 text-neon-orange border-neon-orange/50'
-                            }`}>
-                              {order.status === 'delivered' ? 'Entregue' :
-                               order.status === 'shipped' ? 'Enviado' : 'Processando'}
-                            </Badge>
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-cyber-300 text-sm mb-1">Itens:</p>
-                            <p className="text-white text-sm">{order.items.join(', ')}</p>
-                          </div>
-                          {order.tracking && (
-                            <Button variant="outline" className="border-cyber-500 text-cyber-400 hover:border-neon-blue hover:text-neon-blue">
-                              <Truck className="w-4 h-4 mr-2" />
-                              Rastrear
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </motion.div>
-              )}
-
-              {/* Wishlist Tab */}
-              {activeTab === 'wishlist' && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="bg-dark-800/50 backdrop-blur-sm border border-cyber-500/30 rounded-2xl p-6"
-                >
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-xl font-bold text-white">Lista de Desejos</h2>
-                    <Button className="cyber-button bg-gradient-to-r from-neon-pink to-neon-purple text-white">
-                      <Heart className="w-4 h-4 mr-2" />
-                      Gerenciar
-                    </Button>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {wishlistItems.map((item) => (
-                      <div key={item.id} className="bg-dark-700/30 rounded-lg p-4 border border-cyber-500/20">
-                        <div className="w-full h-32 bg-gradient-to-br from-cyber-800 to-cyber-900 rounded-lg mb-4 flex items-center justify-center">
-                          <div className="text-center">
-                            <div className="w-12 h-12 mx-auto bg-gradient-to-br from-neon-blue to-neon-purple rounded-full flex items-center justify-center mb-2">
-                              <Package className="w-6 h-6 text-white" />
-                            </div>
-                            <p className="text-cyber-400 text-xs">Imagem do Produto</p>
-                          </div>
-                        </div>
-                        
-                        <h3 className="text-white font-bold mb-2 line-clamp-2">{item.name}</h3>
-                        
-                        <div className="flex items-center justify-between mb-3">
-                          <div>
-                            <p className="text-white font-bold">{formatPrice(item.price)}</p>
-                            <p className="text-cyber-500 text-sm line-through">{formatPrice(item.originalPrice)}</p>
-                          </div>
-                          <Badge className="bg-neon-green/20 text-neon-green border-neon-green/50 text-xs">
-                            -{Math.round(((item.originalPrice - item.price) / item.originalPrice) * 100)}%
-                          </Badge>
-                        </div>
-
-                        <div className="flex gap-2">
-                          <Button className="flex-1 cyber-button bg-gradient-to-r from-neon-blue to-neon-purple text-white text-sm">
-                            Comprar
-                          </Button>
-                          <Button variant="outline" className="border-cyber-500 text-cyber-400 hover:border-red-500 hover:text-red-400">
-                            <Heart className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </motion.div>
-              )}
-
-              {/* Price Alerts Tab */}
-              {activeTab === 'alerts' && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="bg-dark-800/50 backdrop-blur-sm border border-cyber-500/30 rounded-2xl p-6"
-                >
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-xl font-bold text-white">Alertas de Preço</h2>
-                    <Button className="cyber-button bg-gradient-to-r from-neon-green to-neon-blue text-white">
-                      <Bell className="w-4 h-4 mr-2" />
-                      Novo Alerta
-                    </Button>
-                  </div>
-
-                  <div className="space-y-4">
-                    {priceAlerts.map((alert) => (
-                      <div key={alert.id} className="p-4 bg-dark-700/30 rounded-lg border border-cyber-500/20">
-                        <div className="flex items-center justify-between mb-3">
-                          <div>
-                            <h3 className="text-white font-bold">{alert.productName}</h3>
-                            <p className="text-cyber-400 text-sm">Criado em {alert.createdAt}</p>
-                          </div>
-                          <Badge className={`text-xs ${
-                            alert.isActive 
-                              ? 'bg-neon-green/20 text-neon-green border-neon-green/50' 
-                              : 'bg-cyber-500/20 text-cyber-500 border-cyber-500/50'
-                          }`}>
-                            {alert.isActive ? 'Ativo' : 'Inativo'}
-                          </Badge>
-                        </div>
-                        
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-4">
-                            <div>
-                              <p className="text-cyber-400 text-sm">Preço Atual</p>
-                              <p className="text-white font-bold">{formatPrice(alert.currentPrice)}</p>
-                            </div>
-                            <div>
-                              <p className="text-cyber-400 text-sm">Preço Alvo</p>
-                              <p className="text-neon-green font-bold">{formatPrice(alert.targetPrice)}</p>
-                            </div>
-                          </div>
-                          <div className="flex gap-2">
-                            <Button variant="outline" className="border-cyber-500 text-cyber-400 hover:border-neon-blue hover:text-neon-blue">
-                              Editar
-                            </Button>
-                            <Button variant="outline" className="border-cyber-500 text-cyber-400 hover:border-red-500 hover:text-red-400">
-                              Remover
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </motion.div>
-              )}
-
-              {/* Analytics Tab */}
-              {activeTab === 'analytics' && (
-                <AdvancedAnalytics />
-              )}
-
-              {/* Notifications Tab */}
-              {activeTab === 'notifications' && (
-                <SmartNotifications />
-              )}
-
-              {/* Settings Tab */}
-              {activeTab === 'settings' && (
-                <AdvancedSettings />
-              )}
+            <div>
+              <h1 className="text-3xl md:text-4xl font-bold text-white">
+                Meu Dashboard
+              </h1>
+              <p className="text-cyber-300">Bem-vindo de volta! Aqui está um resumo da sua conta.</p>
             </div>
-          </div>
+          </motion.div>
         </div>
+      </section>
+
+      <div className="container mx-auto px-4 pb-16">
+        {/* Quick Actions */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+          className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8"
+        >
+          {quickActions.map((action, index) => (
+            <motion.a
+              key={action.name}
+              href={action.href}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, delay: 0.1 + index * 0.05 }}
+              className="bg-dark-800/50 border border-cyber-500/30 rounded-xl p-4 hover:border-neon-blue/50 transition-all group cursor-pointer"
+            >
+              <div className="text-center">
+                <div className="w-12 h-12 bg-gradient-to-br from-neon-blue to-neon-purple rounded-lg flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
+                  <action.icon className={`w-6 h-6 ${action.color}`} />
+                </div>
+                <h3 className="text-white font-medium text-sm">{action.name}</h3>
+              </div>
+            </motion.a>
+          ))}
+        </motion.div>
+
+        {/* Stats Cards */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
+        >
+          <div className="bg-dark-800/50 border border-cyber-500/30 rounded-xl p-6">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-neon-blue to-neon-purple rounded-lg flex items-center justify-center">
+                <Package className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h3 className="text-white font-bold text-2xl">{userStats.totalOrders}</h3>
+                <p className="text-cyber-300 text-sm">Pedidos Realizados</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-dark-800/50 border border-cyber-500/30 rounded-xl p-6">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-neon-green to-neon-blue rounded-lg flex items-center justify-center">
+                <TrendingUp className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h3 className="text-white font-bold text-2xl">{formatPrice(userStats.totalSpent)}</h3>
+                <p className="text-cyber-300 text-sm">Total Gasto</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-dark-800/50 border border-cyber-500/30 rounded-xl p-6">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-neon-pink to-neon-purple rounded-lg flex items-center justify-center">
+                <Heart className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h3 className="text-white font-bold text-2xl">{userStats.favoriteItems}</h3>
+                <p className="text-cyber-300 text-sm">Favoritos</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-dark-800/50 border border-cyber-500/30 rounded-xl p-6">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-neon-yellow to-neon-orange rounded-lg flex items-center justify-center">
+                <Star className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h3 className="text-white font-bold text-2xl">{userStats.reviewsWritten}</h3>
+                <p className="text-cyber-300 text-sm">Avaliações</p>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Tabs */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+          className="bg-dark-800/50 border border-cyber-500/30 rounded-xl overflow-hidden"
+        >
+          {/* Tab Navigation */}
+          <div className="flex border-b border-cyber-500/30">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex-1 flex items-center justify-center gap-2 px-6 py-4 transition-all ${
+                  activeTab === tab.id
+                    ? 'bg-neon-blue/10 text-neon-blue border-b-2 border-neon-blue'
+                    : 'text-cyber-400 hover:text-neon-blue hover:bg-dark-700/50'
+                }`}
+              >
+                <tab.icon className="w-4 h-4" />
+                <span className="font-medium">{tab.name}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* Tab Content */}
+          <div className="p-6">
+            {activeTab === 'overview' && (
+              <div className="space-y-6">
+                {/* Recent Orders */}
+                <div>
+                  <h3 className="text-white font-bold text-lg mb-4">Pedidos Recentes</h3>
+                  <div className="space-y-3">
+                    {recentOrders.slice(0, 3).map((order, index) => (
+                      <motion.div
+                        key={order.id}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.6, delay: index * 0.1 }}
+                        className="flex items-center justify-between p-4 bg-dark-700/50 rounded-lg hover:bg-dark-700/70 transition-colors"
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 bg-gradient-to-br from-neon-blue to-neon-purple rounded-lg flex items-center justify-center">
+                            <Package className="w-5 h-5 text-white" />
+                          </div>
+                          <div>
+                            <h4 className="text-white font-medium">{order.product}</h4>
+                            <p className="text-cyber-400 text-sm">
+                              {order.id} • {new Date(order.date).toLocaleDateString('pt-BR')}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-white font-semibold">{formatPrice(order.total)}</p>
+                          <Badge className={getStatusColor(order.status)}>
+                            {getStatusText(order.status)}
+                          </Badge>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Wishlist Preview */}
+                <div>
+                  <h3 className="text-white font-bold text-lg mb-4">Favoritos Recentes</h3>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    {wishlistItems.map((item, index) => (
+                      <motion.div
+                        key={item.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6, delay: index * 0.1 }}
+                        className="flex items-center gap-4 p-4 bg-dark-700/50 rounded-lg hover:bg-dark-700/70 transition-colors"
+                      >
+                        <div className="w-12 h-12 bg-gradient-to-br from-neon-pink/20 to-neon-purple/20 rounded-lg flex items-center justify-center">
+                          <Heart className="w-6 h-6 text-neon-pink" />
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="text-white font-medium">{item.name}</h4>
+                          <p className="text-cyber-400 text-sm">
+                            Adicionado em {new Date(item.addedDate).toLocaleDateString('pt-BR')}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-white font-semibold">{formatPrice(item.price)}</p>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'orders' && (
+              <div className="space-y-4">
+                {recentOrders.map((order, index) => (
+                  <motion.div
+                    key={order.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: index * 0.1 }}
+                    className="p-6 bg-dark-700/50 rounded-lg hover:bg-dark-700/70 transition-colors"
+                  >
+                    <div className="flex items-center justify-between mb-4">
+                      <div>
+                        <h3 className="text-white font-semibold text-lg">{order.product}</h3>
+                        <p className="text-cyber-400 text-sm">
+                          Pedido #{order.id} • {order.items} {order.items === 1 ? 'item' : 'itens'}
+                        </p>
+                      </div>
+                      <Badge className={getStatusColor(order.status)}>
+                        {getStatusText(order.status)}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4 text-cyber-400 text-sm">
+                        <div className="flex items-center gap-1">
+                          <Calendar className="w-4 h-4" />
+                          {new Date(order.date).toLocaleDateString('pt-BR')}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Clock className="w-4 h-4" />
+                          {new Date(order.date).toLocaleTimeString('pt-BR')}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-white font-bold text-lg">{formatPrice(order.total)}</p>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="mt-2 border-cyber-500 text-cyber-400 hover:border-neon-blue hover:text-neon-blue"
+                        >
+                          Ver Detalhes
+                        </Button>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            )}
+
+            {activeTab === 'wishlist' && (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {wishlistItems.map((item, index) => (
+                  <motion.div
+                    key={item.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: index * 0.1 }}
+                    className="bg-dark-700/50 rounded-lg p-4 hover:bg-dark-700/70 transition-colors"
+                  >
+                    <div className="w-full h-32 bg-gradient-to-br from-neon-pink/20 to-neon-purple/20 rounded-lg flex items-center justify-center mb-4">
+                      <Heart className="w-12 h-12 text-neon-pink" />
+                    </div>
+                    <h3 className="text-white font-semibold mb-2">{item.name}</h3>
+                    <p className="text-cyber-400 text-sm mb-3">
+                      Adicionado em {new Date(item.addedDate).toLocaleDateString('pt-BR')}
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <p className="text-white font-bold">{formatPrice(item.price)}</p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="border-cyber-500 text-cyber-400 hover:border-neon-blue hover:text-neon-blue"
+                      >
+                        Ver Produto
+                      </Button>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            )}
+
+            {activeTab === 'notifications' && (
+              <div className="space-y-4">
+                {notifications.map((notification, index) => (
+                  <motion.div
+                    key={notification.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: index * 0.1 }}
+                    className={`p-4 rounded-lg border transition-colors ${
+                      notification.read
+                        ? 'bg-dark-700/30 border-cyber-500/20'
+                        : 'bg-neon-blue/10 border-neon-blue/30'
+                    }`}
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                        notification.type === 'order' ? 'bg-neon-green/20' :
+                        notification.type === 'promotion' ? 'bg-neon-purple/20' :
+                        'bg-neon-yellow/20'
+                      }`}>
+                        {notification.type === 'order' && <Package className="w-5 h-5 text-neon-green" />}
+                        {notification.type === 'promotion' && <Zap className="w-5 h-5 text-neon-purple" />}
+                        {notification.type === 'review' && <Star className="w-5 h-5 text-neon-yellow" />}
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="text-white font-semibold mb-1">{notification.title}</h4>
+                        <p className="text-cyber-300 text-sm mb-2">{notification.message}</p>
+                        <p className="text-cyber-400 text-xs">
+                          {new Date(notification.date).toLocaleString('pt-BR')}
+                        </p>
+                      </div>
+                      {!notification.read && (
+                        <div className="w-2 h-2 bg-neon-blue rounded-full"></div>
+                      )}
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            )}
+          </div>
+        </motion.div>
       </div>
-    </AppLayout>
+
+      <Footer />
+    </div>
   )
 }

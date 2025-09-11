@@ -26,7 +26,7 @@ export const products: Product[] = [
     originalPrice: 17999,
     category: 'laptops',
     brand: 'Apple',
-    images: ['/images/products/macbook-pro-m3.jpg'],
+    images: ['https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=800&h=600&fit=crop&crop=center'],
     specifications: {
       processor: 'Apple M3 Max',
       memory: '16GB RAM unificada',
@@ -51,7 +51,7 @@ export const products: Product[] = [
     originalPrice: 10999,
     category: 'laptops',
     brand: 'Dell',
-    images: ['/images/products/dell-xps-15.jpg'],
+    images: ['https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=800&h=600&fit=crop&crop=center'],
     specifications: {
       processor: 'Intel Core i7-13700H',
       memory: '16GB DDR5',
@@ -153,7 +153,7 @@ export const products: Product[] = [
     originalPrice: 9999,
     category: 'smartphones',
     brand: 'Apple',
-    images: ['/images/products/iphone-15-pro-max.jpg'],
+    images: ['https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=800&h=600&fit=crop&crop=center'],
     specifications: {
       processor: 'Apple A17 Pro',
       memory: '8GB RAM',
@@ -178,7 +178,7 @@ export const products: Product[] = [
     originalPrice: 7999,
     category: 'smartphones',
     brand: 'Samsung',
-    images: ['/images/products/galaxy-s24-ultra.jpg'],
+    images: ['https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=800&h=600&fit=crop&crop=center'],
     specifications: {
       processor: 'Snapdragon 8 Gen 3',
       memory: '12GB RAM',
