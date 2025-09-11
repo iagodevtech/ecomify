@@ -3,9 +3,9 @@
 
 const { createClient } = require('@supabase/supabase-js')
 
-// Substitua pelas suas credenciais
-const supabaseUrl = 'SUA_URL_DO_SUPABASE_AQUI'
-const supabaseKey = 'SUA_CHAVE_ANONIMA_AQUI'
+// Substitua pelas suas credenciais do arquivo .env.local
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'SUA_URL_DO_SUPABASE_AQUI'
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'SUA_CHAVE_ANONIMA_AQUI'
 
 const supabase = createClient(supabaseUrl, supabaseKey)
 
