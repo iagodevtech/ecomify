@@ -18,6 +18,7 @@ import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { ProtectedRoute } from '@/components/auth/protected-route'
 import { formatPrice } from '@/lib/stripe'
 
 // Mock data - em produção viria do contexto do carrinho
@@ -51,8 +52,9 @@ export default function CarrinhoPage() {
   const total = subtotal + shipping
 
   return (
-    <div className="min-h-screen bg-dark-900">
-      <Header />
+    <ProtectedRoute>
+      <div className="min-h-screen bg-dark-900">
+        <Header />
       
       {/* Hero Section */}
       <section className="pt-24 pb-8 bg-gradient-to-br from-dark-900 via-dark-800 to-dark-900">
@@ -308,6 +310,7 @@ export default function CarrinhoPage() {
       </div>
 
       <Footer />
-    </div>
+      </div>
+    </ProtectedRoute>
   )
 }

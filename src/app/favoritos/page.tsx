@@ -18,6 +18,7 @@ import { Footer } from '@/components/layout/footer'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { formatPrice } from '@/lib/stripe'
+import { ProtectedRoute } from '@/components/auth/protected-route'
 
 // Mock data - em produção viria do contexto
 const mockWishlistItems = [
@@ -77,8 +78,9 @@ export default function FavoritosPage() {
   })
 
   return (
-    <div className="min-h-screen bg-dark-900">
-      <Header />
+    <ProtectedRoute>
+      <div className="min-h-screen bg-dark-900">
+        <Header />
       
       {/* Hero Section */}
       <section className="pt-24 pb-8 bg-gradient-to-br from-dark-900 via-dark-800 to-dark-900">
@@ -309,6 +311,7 @@ export default function FavoritosPage() {
       </div>
 
       <Footer />
-    </div>
+      </div>
+    </ProtectedRoute>
   )
 }

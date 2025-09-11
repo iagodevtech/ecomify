@@ -18,6 +18,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/components/providers'
 import { AppLayout } from '@/components/layout/app-layout'
+import { PublicRoute } from '@/components/auth/protected-route'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -27,7 +28,7 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   
-  const { signIn } = useAuth()
+  const { signIn, signInWithGoogle, signInWithGitHub } = useAuth()
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -54,9 +55,42 @@ export default function LoginPage() {
     }
   }
 
+  const handleGoogleSignIn = async () => {
+    setLoading(true)
+    setError('')
+    
+    try {
+      const { error } = await signInWithGoogle()
+      if (error) {
+        setError(error.message)
+      }
+    } catch (err) {
+      setError('Erro ao fazer login com Google')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleGitHubSignIn = async () => {
+    setLoading(true)
+    setError('')
+    
+    try {
+      const { error } = await signInWithGitHub()
+      if (error) {
+        setError(error.message)
+      }
+    } catch (err) {
+      setError('Erro ao fazer login com GitHub')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
-    <AppLayout>
-      <div className="min-h-screen bg-dark-900 pt-16 lg:pt-20 flex items-center justify-center px-4">
+    <PublicRoute>
+      <AppLayout>
+        <div className="min-h-screen bg-dark-900 pt-16 lg:pt-20 flex items-center justify-center px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -192,6 +226,8 @@ export default function LoginPage() {
             {/* Social Login */}
             <div className="space-y-3">
               <Button
+                onClick={handleGoogleSignIn}
+                disabled={loading}
                 variant="outline"
                 className="w-full border-cyber-500/30 text-cyber-300 hover:border-neon-blue hover:text-neon-blue py-3"
               >
@@ -204,14 +240,16 @@ export default function LoginPage() {
               </Button>
 
               <Button
+                onClick={handleGitHubSignIn}
+                disabled={loading}
                 variant="outline"
                 className="w-full border-cyber-500/30 text-cyber-300 hover:border-neon-blue hover:text-neon-blue py-3"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center">
-                    <span className="text-white text-xs font-bold">f</span>
+                  <div className="w-5 h-5 bg-gray-800 rounded-full flex items-center justify-center">
+                    <span className="text-white text-xs font-bold">GH</span>
                   </div>
-                  Continuar com Facebook
+                  Continuar com GitHub
                 </div>
               </Button>
             </div>
@@ -235,7 +273,8 @@ export default function LoginPage() {
             </p>
           </motion.div>
         </motion.div>
-      </div>
-    </AppLayout>
+        </div>
+      </AppLayout>
+    </PublicRoute>
   )
 }
