@@ -460,10 +460,13 @@ export default function ComparePage() {
                         {selectedProductsData.map((product) => (
                           <div key={product!.id} className="text-center">
                             <p className="text-white text-sm">
-                              {Array.isArray(product!.specifications[spec as keyof typeof product!.specifications]) 
-                                ? (product!.specifications[spec as keyof typeof product!.specifications] as string[]).join(', ')
-                                : product!.specifications[spec as keyof typeof product!.specifications]
-                              }
+                              {(() => {
+                                const specs = product!.specifications as any;
+                                const specValue = specs[spec];
+                                return Array.isArray(specValue) 
+                                  ? specValue.join(', ')
+                                  : specValue;
+                              })()}
                             </p>
                           </div>
                         ))}
