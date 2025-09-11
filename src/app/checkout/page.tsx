@@ -5,760 +5,504 @@ import { motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import { 
   CreditCard, 
-  MapPin, 
-  User, 
-  Lock, 
-  CheckCircle,
+  Smartphone, 
+  FileText, 
+  Paypal,
   ArrowLeft,
-  ArrowRight,
-  Truck,
-  Shield,
-  Zap,
-  Gift,
-  Clock
+  Check,
+  AlertCircle,
+  MapPin,
+  User,
+  Mail,
+  Phone,
+  Lock
 } from 'lucide-react'
-import { AppLayout } from '@/components/layout/app-layout'
+import { Header } from '@/components/layout/header'
+import { Footer } from '@/components/layout/footer'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { ProtectedRoute } from '@/components/auth/protected-route'
 import { useCart } from '@/components/providers'
-import { useAuth } from '@/components/providers'
-import { formatPrice, calculateShipping, calculatePaymentFee } from '@/lib/stripe'
+import { usePayment } from '@/hooks/use-payment'
+import { formatPrice } from '@/lib/stripe'
+import Link from 'next/link'
 
 export default function CheckoutPage() {
   const router = useRouter()
-  const { items, total, clearCart } = useCart()
-  const { user } = useAuth()
+  const { items, subtotal, shipping, discount, total } = useCart()
+  const { loading, error, processPayment } = usePayment()
   
-  const [currentStep, setCurrentStep] = useState(1)
-  const [loading, setLoading] = useState(false)
-  const [orderComplete, setOrderComplete] = useState(false)
-  
+  const [step, setStep] = useState<'address' | 'payment' | 'review' | 'processing'>('address')
+  const [paymentMethod, setPaymentMethod] = useState<'card' | 'pix' | 'boleto' | 'paypal'>('card')
   const [formData, setFormData] = useState({
-    // Shipping
-    firstName: '',
-    lastName: '',
-    email: user?.email || '',
-    phone: '',
-    address: '',
-    city: '',
-    state: '',
-    zipCode: '',
-    country: 'Brasil',
-    
-    // Payment
-    paymentMethod: 'pix',
-    cardNumber: '',
-    cardName: '',
-    cardExpiry: '',
-    cardCvv: '',
-    
-    // Billing
-    sameAsShipping: true,
-    billingAddress: '',
-    billingCity: '',
-    billingState: '',
-    billingZipCode: '',
-    
-    // Additional
-    notes: '',
-    newsletter: true,
-    terms: false
+    shippingAddress: {
+      name: '',
+      street: '',
+      city: '',
+      state: '',
+      zip: '',
+      country: 'Brasil'
+    },
+    billingAddress: {
+      name: '',
+      street: '',
+      city: '',
+      state: '',
+      zip: '',
+      country: 'Brasil'
+    },
+    cardData: {
+      number: '',
+      expiry: '',
+      cvc: '',
+      name: ''
+    },
+    useSameAddress: true
   })
-
-  const [shippingMethod, setShippingMethod] = useState('standard')
-  const [orderId, setOrderId] = useState('')
-
-  const shippingOptions = [
-    {
-      id: 'standard',
-      name: 'Entrega Padrão',
-      description: '5-7 dias úteis',
-      price: 15.90,
-      freeFrom: 199
-    },
-    {
-      id: 'express',
-      name: 'Entrega Expressa',
-      description: '2-3 dias úteis',
-      price: 29.90,
-      freeFrom: 299
-    },
-    {
-      id: 'same_day',
-      name: 'Entrega no Mesmo Dia',
-      description: 'Disponível em algumas regiões',
-      price: 49.90,
-      freeFrom: 499
-    }
-  ]
 
   const paymentMethods = [
     {
+      id: 'card',
+      name: 'Cartão de Crédito',
+      icon: CreditCard,
+      description: 'Visa, Mastercard, Elo'
+    },
+    {
       id: 'pix',
       name: 'PIX',
-      description: 'Pagamento instantâneo',
-      fee: 0,
-      icon: '💳'
-    },
-    {
-      id: 'credit_card',
-      name: 'Cartão de Crédito',
-      description: 'Visa, Mastercard, Elo',
-      fee: 0.0299,
-      icon: '💳'
-    },
-    {
-      id: 'debit_card',
-      name: 'Cartão de Débito',
-      description: 'Visa, Mastercard, Elo',
-      fee: 0.0199,
-      icon: '💳'
+      icon: Smartphone,
+      description: 'Pagamento instantâneo'
     },
     {
       id: 'boleto',
       name: 'Boleto Bancário',
-      description: 'Pagamento via boleto',
-      fee: 0,
-      icon: '📄'
+      icon: FileText,
+      description: 'Vencimento em 3 dias'
+    },
+    {
+      id: 'paypal',
+      name: 'PayPal',
+      icon: Paypal,
+      description: 'Pague com sua conta PayPal'
     }
   ]
 
-  const selectedShipping = shippingOptions.find(s => s.id === shippingMethod)!
-  const selectedPayment = paymentMethods.find(p => p.id === formData.paymentMethod)!
-  
-  const shippingCost = total >= selectedShipping.freeFrom ? 0 : selectedShipping.price
-  const paymentFee = calculatePaymentFee(total + shippingCost, formData.paymentMethod as any)
-  const finalTotal = total + shippingCost + paymentFee
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value, type } = e.target
+  const handleInputChange = (section: string, field: string, value: string) => {
     setFormData(prev => ({
       ...prev,
-      [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
+      [section]: {
+        ...prev[section as keyof typeof prev],
+        [field]: value
+      }
     }))
   }
 
-  const handleNextStep = () => {
-    if (currentStep < 3) {
-      setCurrentStep(currentStep + 1)
+  const handleNext = () => {
+    if (step === 'address') {
+      setStep('payment')
+    } else if (step === 'payment') {
+      setStep('review')
     }
   }
 
-  const handlePrevStep = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1)
+  const handleBack = () => {
+    if (step === 'payment') {
+      setStep('address')
+    } else if (step === 'review') {
+      setStep('payment')
     }
   }
 
-  const handleSubmitOrder = async () => {
-    setLoading(true)
+  const handleSubmit = async () => {
+    setStep('processing')
     
-    try {
-      // Simulate order processing
-      await new Promise(resolve => setTimeout(resolve, 3000))
-      
-      // Generate order ID
-      const newOrderId = `ECM${Date.now().toString().slice(-6)}`
-      setOrderId(newOrderId)
-      
-      // Clear cart
-      clearCart()
-      
-      // Show success
-      setOrderComplete(true)
-    } catch (error) {
-      console.error('Error processing order:', error)
-    } finally {
-      setLoading(false)
+    const paymentData = {
+      paymentMethod,
+      cardData: paymentMethod === 'card' ? formData.cardData : undefined,
+      shippingAddress: formData.shippingAddress,
+      billingAddress: formData.useSameAddress ? formData.shippingAddress : formData.billingAddress
+    }
+
+    const result = await processPayment(paymentData)
+    
+    if (result.success) {
+      if (result.redirectUrl) {
+        window.location.href = result.redirectUrl
+      } else {
+        router.push(`/pedido/${result.orderId}`)
+      }
+    } else {
+      setStep('review')
     }
   }
 
-  if (items.length === 0 && !orderComplete) {
+  if (items.length === 0) {
     return (
-      <AppLayout>
-        <div className="min-h-screen bg-dark-900 pt-16 lg:pt-20 flex items-center justify-center">
-          <div className="text-center">
-            <div className="w-24 h-24 mx-auto bg-gradient-to-br from-cyber-800 to-cyber-900 rounded-full flex items-center justify-center mb-6">
-              <CreditCard className="w-12 h-12 text-cyber-500" />
+      <ProtectedRoute>
+        <div className="min-h-screen bg-dark-900">
+          <Header />
+          <div className="pt-24 pb-16 flex items-center justify-center">
+            <div className="text-center">
+              <AlertCircle className="w-16 h-16 text-cyber-500 mx-auto mb-4" />
+              <h1 className="text-2xl font-bold text-white mb-4">Carrinho Vazio</h1>
+              <p className="text-cyber-400 mb-6">Adicione produtos ao carrinho antes de finalizar a compra</p>
+              <Button asChild className="cyber-button bg-gradient-to-r from-neon-blue to-neon-purple text-white">
+                <Link href="/">Continuar Comprando</Link>
+              </Button>
             </div>
-            <h2 className="text-2xl font-bold text-white mb-4">Carrinho Vazio</h2>
-            <p className="text-cyber-400 mb-6">Adicione produtos ao carrinho para continuar</p>
-            <Button
-              onClick={() => router.push('/produtos')}
-              className="cyber-button bg-gradient-to-r from-neon-blue to-neon-purple text-white"
-            >
-              Continuar Comprando
-            </Button>
           </div>
+          <Footer />
         </div>
-      </AppLayout>
-    )
-  }
-
-  if (orderComplete) {
-    return (
-      <AppLayout>
-        <div className="min-h-screen bg-dark-900 pt-16 lg:pt-20 flex items-center justify-center">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="max-w-2xl mx-auto text-center"
-          >
-            <div className="w-32 h-32 mx-auto bg-gradient-to-br from-neon-green to-neon-blue rounded-full flex items-center justify-center mb-8">
-              <CheckCircle className="w-16 h-16 text-white" />
-            </div>
-            
-            <h1 className="text-4xl font-bold text-white mb-4">Pedido Confirmado!</h1>
-            <p className="text-cyber-400 text-xl mb-6">
-              Seu pedido foi processado com sucesso
-            </p>
-            
-            <div className="bg-dark-800/50 backdrop-blur-sm border border-cyber-500/30 rounded-2xl p-8 mb-8">
-              <h2 className="text-2xl font-bold text-white mb-4">Detalhes do Pedido</h2>
-              <div className="space-y-2 text-cyber-300">
-                <p><span className="text-white font-medium">Número do Pedido:</span> {orderId}</p>
-                <p><span className="text-white font-medium">Total:</span> {formatPrice(finalTotal)}</p>
-                <p><span className="text-white font-medium">Forma de Pagamento:</span> {selectedPayment.name}</p>
-                <p><span className="text-white font-medium">Entrega:</span> {selectedShipping.name}</p>
-              </div>
-            </div>
-            
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button
-                onClick={() => router.push('/dashboard')}
-                className="cyber-button bg-gradient-to-r from-neon-blue to-neon-purple text-white"
-              >
-                Ver Pedidos
-              </Button>
-              <Button
-                onClick={() => router.push('/produtos')}
-                variant="outline"
-                className="border-cyber-500/30 text-cyber-400 hover:text-white"
-              >
-                Continuar Comprando
-              </Button>
-            </div>
-          </motion.div>
-        </div>
-      </AppLayout>
+      </ProtectedRoute>
     )
   }
 
   return (
-    <AppLayout>
-      <div className="min-h-screen bg-dark-900 pt-16 lg:pt-20">
-        <div className="container mx-auto px-4 py-8">
-          {/* Header */}
-          <div className="mb-8">
-            <Button
-              onClick={() => router.back()}
-              variant="outline"
-              className="mb-4 border-cyber-500/30 text-cyber-400 hover:text-white"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Voltar
-            </Button>
-            <h1 className="text-4xl font-bold font-cyber mb-2">
-              <span className="cyber-text bg-gradient-to-r from-neon-blue to-neon-purple bg-clip-text text-transparent">
-                Finalizar Compra
-              </span>
-            </h1>
-            <p className="text-cyber-400">
-              Complete seu pedido de forma segura e rápida
-            </p>
+    <ProtectedRoute>
+      <div className="min-h-screen bg-dark-900">
+        <Header />
+        
+        {/* Progress Steps */}
+        <section className="pt-24 pb-8 bg-gradient-to-br from-dark-900 via-dark-800 to-dark-900">
+          <div className="container mx-auto px-4">
+            <div className="flex items-center justify-center space-x-8">
+              {[
+                { id: 'address', label: 'Endereço', icon: MapPin },
+                { id: 'payment', label: 'Pagamento', icon: CreditCard },
+                { id: 'review', label: 'Revisão', icon: Check }
+              ].map((stepItem, index) => {
+                const isActive = step === stepItem.id
+                const isCompleted = ['address', 'payment', 'review'].indexOf(step) > index
+                
+                return (
+                  <div key={stepItem.id} className="flex items-center">
+                    <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${
+                      isActive || isCompleted 
+                        ? 'border-neon-blue bg-neon-blue text-white' 
+                        : 'border-cyber-500 text-cyber-500'
+                    }`}>
+                      <stepItem.icon className="w-5 h-5" />
+                    </div>
+                    <span className={`ml-2 text-sm font-medium ${
+                      isActive || isCompleted ? 'text-neon-blue' : 'text-cyber-500'
+                    }`}>
+                      {stepItem.label}
+                    </span>
+                    {index < 2 && (
+                      <div className={`w-8 h-0.5 mx-4 ${
+                        isCompleted ? 'bg-neon-blue' : 'bg-cyber-500'
+                      }`} />
+                    )}
+                  </div>
+                )
+              })}
+            </div>
           </div>
+        </section>
 
+        <div className="container mx-auto px-4 pb-16">
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Main Content */}
             <div className="lg:col-span-2">
-              {/* Progress Steps */}
-              <div className="bg-dark-800/50 backdrop-blur-sm border border-cyber-500/30 rounded-2xl p-6 mb-8">
-                <div className="flex items-center justify-between">
-                  {[
-                    { step: 1, title: 'Entrega', icon: MapPin },
-                    { step: 2, title: 'Pagamento', icon: CreditCard },
-                    { step: 3, title: 'Confirmação', icon: CheckCircle }
-                  ].map((step, index) => (
-                    <div key={step.step} className="flex items-center">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                        currentStep >= step.step
-                          ? 'bg-neon-blue text-white'
-                          : 'bg-cyber-700 text-cyber-400'
-                      }`}>
-                        <step.icon className="w-5 h-5" />
-                      </div>
-                      <span className={`ml-2 font-medium ${
-                        currentStep >= step.step ? 'text-white' : 'text-cyber-400'
-                      }`}>
-                        {step.title}
-                      </span>
-                      {index < 2 && (
-                        <div className={`w-16 h-0.5 mx-4 ${
-                          currentStep > step.step ? 'bg-neon-blue' : 'bg-cyber-700'
-                        }`} />
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Step 1: Shipping */}
-              {currentStep === 1 && (
+              {step === 'address' && (
                 <motion.div
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  className="space-y-8"
+                  className="bg-dark-800/50 border border-cyber-500/30 rounded-xl p-6"
                 >
-                  {/* Shipping Address */}
-                  <div className="bg-dark-800/50 backdrop-blur-sm border border-cyber-500/30 rounded-2xl p-6">
-                    <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
-                      <MapPin className="w-6 h-6 text-neon-blue" />
-                      Endereço de Entrega
-                    </h2>
+                  <h2 className="text-2xl font-bold text-white mb-6">Endereço de Entrega</h2>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-cyber-300 text-sm mb-2">Nome Completo</label>
+                      <input
+                        type="text"
+                        value={formData.shippingAddress.name}
+                        onChange={(e) => handleInputChange('shippingAddress', 'name', e.target.value)}
+                        className="w-full px-4 py-3 bg-dark-700 border border-cyber-500/30 rounded-lg text-white focus:border-neon-blue focus:outline-none"
+                        placeholder="Seu nome completo"
+                      />
+                    </div>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-cyber-300 text-sm mb-2">Endereço</label>
+                      <input
+                        type="text"
+                        value={formData.shippingAddress.street}
+                        onChange={(e) => handleInputChange('shippingAddress', 'street', e.target.value)}
+                        className="w-full px-4 py-3 bg-dark-700 border border-cyber-500/30 rounded-lg text-white focus:border-neon-blue focus:outline-none"
+                        placeholder="Rua, número, complemento"
+                      />
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-cyber-300 text-sm font-medium mb-2">Nome *</label>
+                        <label className="block text-cyber-300 text-sm mb-2">Cidade</label>
                         <input
                           type="text"
-                          name="firstName"
-                          value={formData.firstName}
-                          onChange={handleInputChange}
-                          required
-                          className="w-full px-4 py-3 bg-dark-700/50 border border-cyber-500/30 rounded-lg text-white placeholder-cyber-500 focus:border-neon-blue focus:outline-none"
-                          placeholder="Seu nome"
+                          value={formData.shippingAddress.city}
+                          onChange={(e) => handleInputChange('shippingAddress', 'city', e.target.value)}
+                          className="w-full px-4 py-3 bg-dark-700 border border-cyber-500/30 rounded-lg text-white focus:border-neon-blue focus:outline-none"
+                          placeholder="Cidade"
                         />
                       </div>
                       <div>
-                        <label className="block text-cyber-300 text-sm font-medium mb-2">Sobrenome *</label>
+                        <label className="block text-cyber-300 text-sm mb-2">Estado</label>
                         <input
                           type="text"
-                          name="lastName"
-                          value={formData.lastName}
-                          onChange={handleInputChange}
-                          required
-                          className="w-full px-4 py-3 bg-dark-700/50 border border-cyber-500/30 rounded-lg text-white placeholder-cyber-500 focus:border-neon-blue focus:outline-none"
-                          placeholder="Seu sobrenome"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-cyber-300 text-sm font-medium mb-2">Email *</label>
-                        <input
-                          type="email"
-                          name="email"
-                          value={formData.email}
-                          onChange={handleInputChange}
-                          required
-                          className="w-full px-4 py-3 bg-dark-700/50 border border-cyber-500/30 rounded-lg text-white placeholder-cyber-500 focus:border-neon-blue focus:outline-none"
-                          placeholder="seu@email.com"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-cyber-300 text-sm font-medium mb-2">Telefone *</label>
-                        <input
-                          type="tel"
-                          name="phone"
-                          value={formData.phone}
-                          onChange={handleInputChange}
-                          required
-                          className="w-full px-4 py-3 bg-dark-700/50 border border-cyber-500/30 rounded-lg text-white placeholder-cyber-500 focus:border-neon-blue focus:outline-none"
-                          placeholder="(11) 99999-9999"
-                        />
-                      </div>
-                      <div className="md:col-span-2">
-                        <label className="block text-cyber-300 text-sm font-medium mb-2">Endereço *</label>
-                        <input
-                          type="text"
-                          name="address"
-                          value={formData.address}
-                          onChange={handleInputChange}
-                          required
-                          className="w-full px-4 py-3 bg-dark-700/50 border border-cyber-500/30 rounded-lg text-white placeholder-cyber-500 focus:border-neon-blue focus:outline-none"
-                          placeholder="Rua, número, complemento"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-cyber-300 text-sm font-medium mb-2">Cidade *</label>
-                        <input
-                          type="text"
-                          name="city"
-                          value={formData.city}
-                          onChange={handleInputChange}
-                          required
-                          className="w-full px-4 py-3 bg-dark-700/50 border border-cyber-500/30 rounded-lg text-white placeholder-cyber-500 focus:border-neon-blue focus:outline-none"
-                          placeholder="Sua cidade"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-cyber-300 text-sm font-medium mb-2">Estado *</label>
-                        <select
-                          name="state"
-                          value={formData.state}
-                          onChange={handleInputChange}
-                          required
-                          className="w-full px-4 py-3 bg-dark-700/50 border border-cyber-500/30 rounded-lg text-white focus:border-neon-blue focus:outline-none"
-                        >
-                          <option value="">Selecione</option>
-                          <option value="SP">São Paulo</option>
-                          <option value="RJ">Rio de Janeiro</option>
-                          <option value="MG">Minas Gerais</option>
-                          <option value="RS">Rio Grande do Sul</option>
-                          <option value="PR">Paraná</option>
-                          <option value="SC">Santa Catarina</option>
-                          <option value="BA">Bahia</option>
-                          <option value="GO">Goiás</option>
-                          <option value="PE">Pernambuco</option>
-                          <option value="CE">Ceará</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-cyber-300 text-sm font-medium mb-2">CEP *</label>
-                        <input
-                          type="text"
-                          name="zipCode"
-                          value={formData.zipCode}
-                          onChange={handleInputChange}
-                          required
-                          className="w-full px-4 py-3 bg-dark-700/50 border border-cyber-500/30 rounded-lg text-white placeholder-cyber-500 focus:border-neon-blue focus:outline-none"
-                          placeholder="00000-000"
+                          value={formData.shippingAddress.state}
+                          onChange={(e) => handleInputChange('shippingAddress', 'state', e.target.value)}
+                          className="w-full px-4 py-3 bg-dark-700 border border-cyber-500/30 rounded-lg text-white focus:border-neon-blue focus:outline-none"
+                          placeholder="Estado"
                         />
                       </div>
                     </div>
-                  </div>
-
-                  {/* Shipping Method */}
-                  <div className="bg-dark-800/50 backdrop-blur-sm border border-cyber-500/30 rounded-2xl p-6">
-                    <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
-                      <Truck className="w-6 h-6 text-neon-blue" />
-                      Método de Entrega
-                    </h2>
                     
-                    <div className="space-y-4">
-                      {shippingOptions.map((option) => (
-                        <div
-                          key={option.id}
-                          onClick={() => setShippingMethod(option.id)}
-                          className={`p-4 rounded-lg border cursor-pointer transition-all ${
-                            shippingMethod === option.id
-                              ? 'border-neon-blue bg-neon-blue/10'
-                              : 'border-cyber-500/30 hover:border-cyber-400/50'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <h3 className="text-white font-bold">{option.name}</h3>
-                              <p className="text-cyber-400">{option.description}</p>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-white font-bold">
-                                {total >= option.freeFrom ? 'Grátis' : formatPrice(option.price)}
-                              </p>
-                              {total >= option.freeFrom && (
-                                <p className="text-neon-green text-sm">Frete grátis!</p>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
+                    <div>
+                      <label className="block text-cyber-300 text-sm mb-2">CEP</label>
+                      <input
+                        type="text"
+                        value={formData.shippingAddress.zip}
+                        onChange={(e) => handleInputChange('shippingAddress', 'zip', e.target.value)}
+                        className="w-full px-4 py-3 bg-dark-700 border border-cyber-500/30 rounded-lg text-white focus:border-neon-blue focus:outline-none"
+                        placeholder="00000-000"
+                      />
                     </div>
                   </div>
                 </motion.div>
               )}
 
-              {/* Step 2: Payment */}
-              {currentStep === 2 && (
+              {step === 'payment' && (
                 <motion.div
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  className="space-y-8"
+                  className="space-y-6"
                 >
-                  {/* Payment Method */}
-                  <div className="bg-dark-800/50 backdrop-blur-sm border border-cyber-500/30 rounded-2xl p-6">
-                    <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
-                      <CreditCard className="w-6 h-6 text-neon-blue" />
-                      Método de Pagamento
-                    </h2>
+                  {/* Payment Methods */}
+                  <div className="bg-dark-800/50 border border-cyber-500/30 rounded-xl p-6">
+                    <h2 className="text-2xl font-bold text-white mb-6">Método de Pagamento</h2>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 gap-4">
                       {paymentMethods.map((method) => (
-                        <div
+                        <button
                           key={method.id}
-                          onClick={() => setFormData(prev => ({ ...prev, paymentMethod: method.id }))}
-                          className={`p-4 rounded-lg border cursor-pointer transition-all ${
-                            formData.paymentMethod === method.id
+                          onClick={() => setPaymentMethod(method.id as any)}
+                          className={`p-4 rounded-lg border-2 transition-all ${
+                            paymentMethod === method.id
                               ? 'border-neon-blue bg-neon-blue/10'
-                              : 'border-cyber-500/30 hover:border-cyber-400/50'
+                              : 'border-cyber-500/30 hover:border-cyber-500/50'
                           }`}
                         >
                           <div className="flex items-center gap-3">
-                            <span className="text-2xl">{method.icon}</span>
-                            <div>
-                              <h3 className="text-white font-bold">{method.name}</h3>
-                              <p className="text-cyber-400 text-sm">{method.description}</p>
+                            <method.icon className={`w-6 h-6 ${
+                              paymentMethod === method.id ? 'text-neon-blue' : 'text-cyber-400'
+                            }`} />
+                            <div className="text-left">
+                              <div className={`font-medium ${
+                                paymentMethod === method.id ? 'text-neon-blue' : 'text-white'
+                              }`}>
+                                {method.name}
+                              </div>
+                              <div className="text-cyber-400 text-sm">{method.description}</div>
                             </div>
                           </div>
-                        </div>
+                        </button>
                       ))}
                     </div>
                   </div>
 
-                  {/* Card Details (if credit/debit card) */}
-                  {(formData.paymentMethod === 'credit_card' || formData.paymentMethod === 'debit_card') && (
-                    <div className="bg-dark-800/50 backdrop-blur-sm border border-cyber-500/30 rounded-2xl p-6">
+                  {/* Card Details */}
+                  {paymentMethod === 'card' && (
+                    <div className="bg-dark-800/50 border border-cyber-500/30 rounded-xl p-6">
                       <h3 className="text-xl font-bold text-white mb-4">Dados do Cartão</h3>
                       
                       <div className="space-y-4">
                         <div>
-                          <label className="block text-cyber-300 text-sm font-medium mb-2">Número do Cartão *</label>
+                          <label className="block text-cyber-300 text-sm mb-2">Número do Cartão</label>
                           <input
                             type="text"
-                            name="cardNumber"
-                            value={formData.cardNumber}
-                            onChange={handleInputChange}
-                            className="w-full px-4 py-3 bg-dark-700/50 border border-cyber-500/30 rounded-lg text-white placeholder-cyber-500 focus:border-neon-blue focus:outline-none"
+                            value={formData.cardData.number}
+                            onChange={(e) => handleInputChange('cardData', 'number', e.target.value)}
+                            className="w-full px-4 py-3 bg-dark-700 border border-cyber-500/30 rounded-lg text-white focus:border-neon-blue focus:outline-none"
                             placeholder="0000 0000 0000 0000"
                           />
                         </div>
-                        <div>
-                          <label className="block text-cyber-300 text-sm font-medium mb-2">Nome no Cartão *</label>
-                          <input
-                            type="text"
-                            name="cardName"
-                            value={formData.cardName}
-                            onChange={handleInputChange}
-                            className="w-full px-4 py-3 bg-dark-700/50 border border-cyber-500/30 rounded-lg text-white placeholder-cyber-500 focus:border-neon-blue focus:outline-none"
-                            placeholder="Nome como está no cartão"
-                          />
-                        </div>
+                        
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <label className="block text-cyber-300 text-sm font-medium mb-2">Validade *</label>
+                            <label className="block text-cyber-300 text-sm mb-2">Validade</label>
                             <input
                               type="text"
-                              name="cardExpiry"
-                              value={formData.cardExpiry}
-                              onChange={handleInputChange}
-                              className="w-full px-4 py-3 bg-dark-700/50 border border-cyber-500/30 rounded-lg text-white placeholder-cyber-500 focus:border-neon-blue focus:outline-none"
+                              value={formData.cardData.expiry}
+                              onChange={(e) => handleInputChange('cardData', 'expiry', e.target.value)}
+                              className="w-full px-4 py-3 bg-dark-700 border border-cyber-500/30 rounded-lg text-white focus:border-neon-blue focus:outline-none"
                               placeholder="MM/AA"
                             />
                           </div>
                           <div>
-                            <label className="block text-cyber-300 text-sm font-medium mb-2">CVV *</label>
+                            <label className="block text-cyber-300 text-sm mb-2">CVV</label>
                             <input
                               type="text"
-                              name="cardCvv"
-                              value={formData.cardCvv}
-                              onChange={handleInputChange}
-                              className="w-full px-4 py-3 bg-dark-700/50 border border-cyber-500/30 rounded-lg text-white placeholder-cyber-500 focus:border-neon-blue focus:outline-none"
+                              value={formData.cardData.cvc}
+                              onChange={(e) => handleInputChange('cardData', 'cvc', e.target.value)}
+                              className="w-full px-4 py-3 bg-dark-700 border border-cyber-500/30 rounded-lg text-white focus:border-neon-blue focus:outline-none"
                               placeholder="000"
                             />
                           </div>
                         </div>
+                        
+                        <div>
+                          <label className="block text-cyber-300 text-sm mb-2">Nome no Cartão</label>
+                          <input
+                            type="text"
+                            value={formData.cardData.name}
+                            onChange={(e) => handleInputChange('cardData', 'name', e.target.value)}
+                            className="w-full px-4 py-3 bg-dark-700 border border-cyber-500/30 rounded-lg text-white focus:border-neon-blue focus:outline-none"
+                            placeholder="Nome como está no cartão"
+                          />
+                        </div>
                       </div>
                     </div>
                   )}
-
-                  {/* Terms */}
-                  <div className="bg-dark-800/50 backdrop-blur-sm border border-cyber-500/30 rounded-2xl p-6">
-                    <div className="space-y-4">
-                      <label className="flex items-start gap-3 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          name="terms"
-                          checked={formData.terms}
-                          onChange={handleInputChange}
-                          className="mt-1 w-5 h-5 text-neon-blue bg-dark-700 border-cyber-500 rounded focus:ring-neon-blue"
-                        />
-                        <span className="text-cyber-300">
-                          Eu concordo com os{' '}
-                          <a href="/terms" className="text-neon-blue hover:text-neon-purple">
-                            Termos de Uso
-                          </a>{' '}
-                          e{' '}
-                          <a href="/privacy" className="text-neon-blue hover:text-neon-purple">
-                            Política de Privacidade
-                          </a>
-                        </span>
-                      </label>
-                      
-                      <label className="flex items-start gap-3 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          name="newsletter"
-                          checked={formData.newsletter}
-                          onChange={handleInputChange}
-                          className="mt-1 w-5 h-5 text-neon-blue bg-dark-700 border-cyber-500 rounded focus:ring-neon-blue"
-                        />
-                        <span className="text-cyber-300">
-                          Quero receber ofertas e novidades por email
-                        </span>
-                      </label>
-                    </div>
-                  </div>
                 </motion.div>
               )}
 
-              {/* Step 3: Confirmation */}
-              {currentStep === 3 && (
+              {step === 'review' && (
                 <motion.div
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  className="space-y-8"
+                  className="bg-dark-800/50 border border-cyber-500/30 rounded-xl p-6"
                 >
-                  <div className="bg-dark-800/50 backdrop-blur-sm border border-cyber-500/30 rounded-2xl p-6">
-                    <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
-                      <CheckCircle className="w-6 h-6 text-neon-blue" />
-                      Confirmação do Pedido
-                    </h2>
+                  <h2 className="text-2xl font-bold text-white mb-6">Revisar Pedido</h2>
+                  
+                  <div className="space-y-6">
+                    <div>
+                      <h3 className="text-lg font-semibold text-white mb-3">Endereço de Entrega</h3>
+                      <div className="bg-dark-700/50 rounded-lg p-4">
+                        <p className="text-white">{formData.shippingAddress.name}</p>
+                        <p className="text-cyber-300">{formData.shippingAddress.street}</p>
+                        <p className="text-cyber-300">
+                          {formData.shippingAddress.city}, {formData.shippingAddress.state} {formData.shippingAddress.zip}
+                        </p>
+                      </div>
+                    </div>
                     
-                    <div className="space-y-6">
-                      {/* Order Summary */}
-                      <div>
-                        <h3 className="text-lg font-bold text-white mb-3">Resumo do Pedido</h3>
-                        <div className="space-y-2">
-                          {items.map((item) => (
-                            <div key={item.id} className="flex justify-between text-cyber-300">
-                              <span>{item.name} x {item.quantity}</span>
-                              <span>{formatPrice(item.price * item.quantity)}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                      
-                      {/* Shipping Info */}
-                      <div>
-                        <h3 className="text-lg font-bold text-white mb-3">Entrega</h3>
-                        <div className="text-cyber-300 space-y-1">
-                          <p>{formData.firstName} {formData.lastName}</p>
-                          <p>{formData.address}</p>
-                          <p>{formData.city}, {formData.state} {formData.zipCode}</p>
-                          <p>{selectedShipping.name} - {selectedShipping.description}</p>
-                        </div>
-                      </div>
-                      
-                      {/* Payment Info */}
-                      <div>
-                        <h3 className="text-lg font-bold text-white mb-3">Pagamento</h3>
-                        <div className="text-cyber-300">
-                          <p>{selectedPayment.name}</p>
-                          {formData.paymentMethod === 'credit_card' && (
-                            <p>**** **** **** {formData.cardNumber.slice(-4)}</p>
-                          )}
-                        </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-white mb-3">Método de Pagamento</h3>
+                      <div className="bg-dark-700/50 rounded-lg p-4">
+                        <p className="text-white">
+                          {paymentMethods.find(m => m.id === paymentMethod)?.name}
+                        </p>
+                        <p className="text-cyber-300">
+                          {paymentMethods.find(m => m.id === paymentMethod)?.description}
+                        </p>
                       </div>
                     </div>
                   </div>
                 </motion.div>
               )}
 
-              {/* Navigation */}
-              <div className="flex justify-between">
-                {currentStep > 1 && (
+              {step === 'processing' && (
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="bg-dark-800/50 border border-cyber-500/30 rounded-xl p-6 text-center"
+                >
+                  <div className="animate-spin w-12 h-12 border-2 border-neon-blue border-t-transparent rounded-full mx-auto mb-4"></div>
+                  <h2 className="text-2xl font-bold text-white mb-2">Processando Pagamento</h2>
+                  <p className="text-cyber-300">Aguarde enquanto processamos seu pagamento...</p>
+                </motion.div>
+              )}
+
+              {/* Navigation Buttons */}
+              {step !== 'processing' && (
+                <div className="flex justify-between mt-8">
                   <Button
-                    onClick={handlePrevStep}
+                    onClick={handleBack}
                     variant="outline"
-                    className="border-cyber-500/30 text-cyber-400 hover:text-white"
+                    className="border-cyber-500 text-cyber-400 hover:border-neon-blue hover:text-neon-blue"
+                    disabled={step === 'address'}
                   >
                     <ArrowLeft className="w-4 h-4 mr-2" />
                     Voltar
                   </Button>
-                )}
-                
-                <div className="ml-auto">
-                  {currentStep < 3 ? (
+                  
+                  {step === 'review' ? (
                     <Button
-                      onClick={handleNextStep}
-                      className="cyber-button bg-gradient-to-r from-neon-blue to-neon-purple text-white"
+                      onClick={handleSubmit}
+                      disabled={loading}
+                      className="cyber-button bg-gradient-to-r from-neon-green to-neon-blue text-white"
                     >
-                      Continuar
-                      <ArrowRight className="w-4 h-4 ml-2" />
+                      {loading ? 'Processando...' : 'Finalizar Pedido'}
                     </Button>
                   ) : (
                     <Button
-                      onClick={handleSubmitOrder}
-                      disabled={loading || !formData.terms}
-                      className="cyber-button bg-gradient-to-r from-neon-green to-neon-blue text-white"
+                      onClick={handleNext}
+                      className="cyber-button bg-gradient-to-r from-neon-blue to-neon-purple text-white"
                     >
-                      {loading ? (
-                        <div className="flex items-center gap-2">
-                          <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                          Processando...
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-2">
-                          <Lock className="w-4 h-4" />
-                          Finalizar Pedido
-                        </div>
-                      )}
+                      Continuar
                     </Button>
                   )}
                 </div>
-              </div>
+              )}
             </div>
 
-            {/* Order Summary Sidebar */}
+            {/* Order Summary */}
             <div className="lg:col-span-1">
-              <div className="bg-dark-800/50 backdrop-blur-sm border border-cyber-500/30 rounded-2xl p-6 sticky top-24">
-                <h2 className="text-xl font-bold text-white mb-6">Resumo do Pedido</h2>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="bg-dark-800/50 border border-cyber-500/30 rounded-xl p-6 sticky top-24"
+              >
+                <h3 className="text-xl font-bold text-white mb-6">Resumo do Pedido</h3>
                 
-                {/* Items */}
                 <div className="space-y-4 mb-6">
                   {items.map((item) => (
                     <div key={item.id} className="flex items-center gap-3">
-                      <div className="w-12 h-12 bg-gradient-to-br from-cyber-800 to-cyber-900 rounded-lg flex items-center justify-center">
-                        <Zap className="w-6 h-6 text-cyber-500" />
-                      </div>
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                        className="w-12 h-12 object-cover rounded-lg"
+                      />
                       <div className="flex-1">
-                        <h3 className="text-white font-medium text-sm line-clamp-2">{item.name}</h3>
+                        <p className="text-white text-sm font-medium">{item.name}</p>
                         <p className="text-cyber-400 text-xs">Qtd: {item.quantity}</p>
                       </div>
-                      <span className="text-white font-bold">{formatPrice(item.price * item.quantity)}</span>
+                      <p className="text-neon-green font-semibold">
+                        {formatPrice(item.price * item.quantity)}
+                      </p>
                     </div>
                   ))}
                 </div>
                 
-                {/* Totals */}
-                <div className="space-y-3 border-t border-cyber-700 pt-4">
+                <div className="space-y-2 border-t border-cyber-500/30 pt-4">
                   <div className="flex justify-between text-cyber-300">
                     <span>Subtotal</span>
-                    <span>{formatPrice(total)}</span>
+                    <span>{formatPrice(subtotal)}</span>
                   </div>
                   <div className="flex justify-between text-cyber-300">
                     <span>Frete</span>
-                    <span>{shippingCost === 0 ? 'Grátis' : formatPrice(shippingCost)}</span>
+                    <span>{shipping === 0 ? 'Grátis' : formatPrice(shipping)}</span>
                   </div>
-                  {paymentFee > 0 && (
-                    <div className="flex justify-between text-cyber-300">
-                      <span>Taxa de Pagamento</span>
-                      <span>{formatPrice(paymentFee)}</span>
+                  {discount > 0 && (
+                    <div className="flex justify-between text-neon-green">
+                      <span>Desconto</span>
+                      <span>-{formatPrice(discount)}</span>
                     </div>
                   )}
-                  <div className="flex justify-between text-white font-bold text-lg border-t border-cyber-700 pt-3">
+                  <div className="flex justify-between text-white font-bold text-lg border-t border-cyber-500/30 pt-2">
                     <span>Total</span>
-                    <span>{formatPrice(finalTotal)}</span>
+                    <span>{formatPrice(total)}</span>
                   </div>
                 </div>
-                
-                {/* Security Badges */}
-                <div className="mt-6 pt-6 border-t border-cyber-700">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Shield className="w-4 h-4 text-neon-green" />
-                    <span className="text-neon-green text-sm font-medium">Compra 100% Segura</span>
-                  </div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <Lock className="w-4 h-4 text-neon-blue" />
-                    <span className="text-neon-blue text-sm font-medium">Dados Criptografados</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Gift className="w-4 h-4 text-neon-purple" />
-                    <span className="text-neon-purple text-sm font-medium">Garantia Estendida</span>
-                  </div>
-                </div>
-              </div>
+              </motion.div>
             </div>
           </div>
         </div>
+
+        <Footer />
       </div>
-    </AppLayout>
+    </ProtectedRoute>
   )
 }
