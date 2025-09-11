@@ -59,75 +59,51 @@ import { useCart } from '@/components/providers'
 
 const mainCategories = [
   { 
-    name: 'Laptops & Notebooks', 
-    href: '/categoria/laptops',
-    icon: Laptop,
+    name: 'Produtos', 
+    href: '/produtos',
+    icon: Package,
     color: 'from-neon-blue to-cyber-600',
     subcategories: [
-      { name: 'MacBook', href: '/categoria/laptops/macbook' },
-      { name: 'Windows', href: '/categoria/laptops/windows' },
-      { name: 'Gaming', href: '/categoria/laptops/gaming' },
-      { name: 'Ultrabooks', href: '/categoria/laptops/ultrabooks' }
+      { name: 'Laptops', href: '/categoria/laptops' },
+      { name: 'Smartphones', href: '/categoria/smartphones' },
+      { name: 'Áudio', href: '/categoria/audio' },
+      { name: 'Gaming', href: '/categoria/gaming' }
     ]
   },
   { 
-    name: 'Smartphones', 
-    href: '/categoria/smartphones',
-    icon: Smartphone,
+    name: 'Promoções', 
+    href: '/promocoes',
+    icon: Tag,
     color: 'from-neon-green to-cyber-600',
     subcategories: [
-      { name: 'iPhone', href: '/categoria/smartphones/iphone' },
-      { name: 'Samsung', href: '/categoria/smartphones/samsung' },
-      { name: 'Android', href: '/categoria/smartphones/android' },
-      { name: 'Acessórios', href: '/categoria/smartphones/acessorios' }
+      { name: 'Ofertas do Dia', href: '/promocoes/dia' },
+      { name: 'Black Friday', href: '/promocoes/black-friday' },
+      { name: 'Cyber Monday', href: '/promocoes/cyber-monday' },
+      { name: 'Liquidação', href: '/promocoes/liquidacao' }
     ]
   },
   { 
-    name: 'Áudio & Som', 
-    href: '/categoria/audio',
-    icon: Headphones,
+    name: 'Sobre', 
+    href: '/sobre',
+    icon: Award,
     color: 'from-neon-purple to-cyber-600',
     subcategories: [
-      { name: 'Fones de Ouvido', href: '/categoria/audio/fones' },
-      { name: 'Caixas de Som', href: '/categoria/audio/caixas' },
-      { name: 'Microfones', href: '/categoria/audio/microfones' },
-      { name: 'Amplificadores', href: '/categoria/audio/amplificadores' }
+      { name: 'Nossa História', href: '/sobre#historia' },
+      { name: 'Equipe', href: '/sobre#equipe' },
+      { name: 'Missão', href: '/sobre#missao' },
+      { name: 'Valores', href: '/sobre#valores' }
     ]
   },
   { 
-    name: 'Gaming', 
-    href: '/categoria/gaming',
-    icon: Gamepad,
+    name: 'Contato', 
+    href: '/contato',
+    icon: MapPin,
     color: 'from-neon-pink to-cyber-600',
     subcategories: [
-      { name: 'Consoles', href: '/categoria/gaming/consoles' },
-      { name: 'PC Gaming', href: '/categoria/gaming/pc' },
-      { name: 'Periféricos', href: '/categoria/gaming/perifericos' },
-      { name: 'Jogos', href: '/categoria/gaming/jogos' }
-    ]
-  },
-  { 
-    name: 'Componentes', 
-    href: '/categoria/componentes',
-    icon: Cpu,
-    color: 'from-neon-orange to-cyber-600',
-    subcategories: [
-      { name: 'Processadores', href: '/categoria/componentes/processadores' },
-      { name: 'Placas de Vídeo', href: '/categoria/componentes/gpu' },
-      { name: 'Memória RAM', href: '/categoria/componentes/ram' },
-      { name: 'Armazenamento', href: '/categoria/componentes/armazenamento' }
-    ]
-  },
-  { 
-    name: 'Monitores', 
-    href: '/categoria/monitores',
-    icon: Monitor,
-    color: 'from-cyan-500 to-cyber-600',
-    subcategories: [
-      { name: '4K', href: '/categoria/monitores/4k' },
-      { name: 'Gaming', href: '/categoria/monitores/gaming' },
-      { name: 'Ultrawide', href: '/categoria/monitores/ultrawide' },
-      { name: 'Profissionais', href: '/categoria/monitores/profissionais' }
+      { name: 'Chat Online', href: '/contato#chat' },
+      { name: 'Email', href: '/contato#email' },
+      { name: 'Telefone', href: '/contato#telefone' },
+      { name: 'WhatsApp', href: '/contato#whatsapp' }
     ]
   }
 ]
@@ -140,10 +116,11 @@ const quickActions = [
 ]
 
 const userMenuItems = [
-  { name: 'Meu Perfil', href: '/dashboard', icon: User },
-  { name: 'Meus Pedidos', href: '/pedidos', icon: Package },
+  { name: 'Dashboard', href: '/dashboard', icon: BarChart3 },
+  { name: 'Meu Perfil', href: '/perfil', icon: User },
   { name: 'Favoritos', href: '/favoritos', icon: Heart },
   { name: 'Alertas de Preço', href: '/alertas', icon: Bell },
+  { name: 'Suporte', href: '/suporte', icon: Bell },
   { name: 'Comparar Produtos', href: '/comparar', icon: BarChart3 },
   { name: 'Cupons', href: '/cupons', icon: Gift },
   { name: 'Pagamentos', href: '/pagamentos', icon: CreditCard },

@@ -80,20 +80,38 @@ export function Header() {
           </motion.div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center gap-8">
-            {categories.slice(0, 6).map((category, index) => (
-              <motion.a
-                key={category.name}
-                href={category.href}
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className="text-cyber-300 hover:text-neon-blue transition-colors font-medium relative group"
-              >
-                {category.name}
-                <div className="absolute -bottom-1 left-0 w-0 h-0.5 bg-neon-blue transition-all group-hover:w-full" />
-              </motion.a>
-            ))}
+          <nav className="hidden lg:flex items-center gap-6">
+            <motion.a
+              href="/produtos"
+              className="text-cyber-300 hover:text-neon-blue transition-colors font-medium relative group"
+            >
+              Produtos
+              <div className="absolute -bottom-1 left-0 w-0 h-0.5 bg-neon-blue transition-all group-hover:w-full" />
+            </motion.a>
+            
+            <motion.a
+              href="/promocoes"
+              className="text-cyber-300 hover:text-neon-blue transition-colors font-medium relative group"
+            >
+              Promoções
+              <div className="absolute -bottom-1 left-0 w-0 h-0.5 bg-neon-blue transition-all group-hover:w-full" />
+            </motion.a>
+            
+            <motion.a
+              href="/sobre"
+              className="text-cyber-300 hover:text-neon-blue transition-colors font-medium relative group"
+            >
+              Sobre
+              <div className="absolute -bottom-1 left-0 w-0 h-0.5 bg-neon-blue transition-all group-hover:w-full" />
+            </motion.a>
+            
+            <motion.a
+              href="/contato"
+              className="text-cyber-300 hover:text-neon-blue transition-colors font-medium relative group"
+            >
+              Contato
+              <div className="absolute -bottom-1 left-0 w-0 h-0.5 bg-neon-blue transition-all group-hover:w-full" />
+            </motion.a>
           </nav>
 
           {/* Search Bar */}
@@ -196,15 +214,15 @@ export function Header() {
                             href="/dashboard"
                             className="flex items-center gap-3 px-3 py-2 text-cyber-300 hover:text-neon-blue hover:bg-cyber-800/50 rounded-lg transition-all"
                           >
-                            <User className="w-4 h-4" />
-                            Meu Perfil
+                            <Package className="w-4 h-4" />
+                            Dashboard
                           </a>
                           <a
-                            href="/pedidos"
+                            href="/perfil"
                             className="flex items-center gap-3 px-3 py-2 text-cyber-300 hover:text-neon-blue hover:bg-cyber-800/50 rounded-lg transition-all"
                           >
-                            <Package className="w-4 h-4" />
-                            Meus Pedidos
+                            <User className="w-4 h-4" />
+                            Meu Perfil
                           </a>
                           <a
                             href="/favoritos"
@@ -214,18 +232,18 @@ export function Header() {
                             Favoritos
                           </a>
                           <a
-                            href="/pagamentos"
+                            href="/alertas"
                             className="flex items-center gap-3 px-3 py-2 text-cyber-300 hover:text-neon-blue hover:bg-cyber-800/50 rounded-lg transition-all"
                           >
-                            <CreditCard className="w-4 h-4" />
-                            Pagamentos
+                            <Bell className="w-4 h-4" />
+                            Alertas
                           </a>
                           <a
-                            href="/configuracoes"
+                            href="/suporte"
                             className="flex items-center gap-3 px-3 py-2 text-cyber-300 hover:text-neon-blue hover:bg-cyber-800/50 rounded-lg transition-all"
                           >
-                            <Settings className="w-4 h-4" />
-                            Configurações
+                            <Bell className="w-4 h-4" />
+                            Suporte
                           </a>
                           <hr className="border-cyber-700 my-2" />
                           <button
