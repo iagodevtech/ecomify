@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Search, Filter, X, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { useProductSearch } from '@/hooks/use-product-search'
 
 interface SearchBarProps {
   onSearch?: (query: string) => void
@@ -25,6 +26,7 @@ export function SearchBar({
     rating: '',
     inStock: false
   })
+  const { search } = useProductSearch()
 
   const categories = [
     'Todos',
@@ -69,21 +71,81 @@ export function SearchBar({
     '1+ estrelas'
   ]
 
-  const handleSearch = () => {
+  const handleSearch = async () => {
+    const searchFilters = {
+      query: searchQuery,
+      category: filters.category === 'Todos' ? undefined : filters.category,
+      brand: filters.brand === 'Todos' ? undefined : filters.brand,
+      rating: filters.rating === 'Todos' ? undefined : filters.rating,
+      inStock: filters.inStock,
+      sortBy: 'name',
+      sortOrder: 'asc'
+    }
+
+    // Parse price range
+    if (filters.priceRange && filters.priceRange !== 'Todos') {
+      const priceRanges: { [key: string]: { min?: string; max?: string } } = {
+        'Até R$ 1.000': { max: '1000' },
+        'R$ 1.000 - R$ 5.000': { min: '1000', max: '5000' },
+        'R$ 5.000 - R$ 10.000': { min: '5000', max: '10000' },
+        'R$ 10.000 - R$ 20.000': { min: '10000', max: '20000' },
+        'Acima de R$ 20.000': { min: '20000' }
+      }
+      
+      const range = priceRanges[filters.priceRange]
+      if (range) {
+        if (range.min) searchFilters.minPrice = range.min
+        if (range.max) searchFilters.maxPrice = range.max
+      }
+    }
+
+    await search(searchFilters)
+
     if (onSearch) {
       onSearch(searchQuery)
     }
   }
 
-  const handleFilterChange = (key: string, value: string | boolean) => {
+  const handleFilterChange = async (key: string, value: string | boolean) => {
     const newFilters = { ...filters, [key]: value }
     setFilters(newFilters)
+    
+    // Auto-search when filters change
+    const searchFilters = {
+      query: searchQuery,
+      category: newFilters.category === 'Todos' ? undefined : newFilters.category,
+      brand: newFilters.brand === 'Todos' ? undefined : newFilters.brand,
+      rating: newFilters.rating === 'Todos' ? undefined : newFilters.rating,
+      inStock: newFilters.inStock,
+      sortBy: 'name',
+      sortOrder: 'asc'
+    }
+
+    // Parse price range
+    if (newFilters.priceRange && newFilters.priceRange !== 'Todos') {
+      const priceRanges: { [key: string]: { min?: string; max?: string } } = {
+        'Até R$ 1.000': { max: '1000' },
+        'R$ 1.000 - R$ 5.000': { min: '1000', max: '5000' },
+        'R$ 5.000 - R$ 10.000': { min: '5000', max: '10000' },
+        'R$ 10.000 - R$ 20.000': { min: '10000', max: '20000' },
+        'Acima de R$ 20.000': { min: '20000' }
+      }
+      
+      const range = priceRanges[newFilters.priceRange]
+      if (range) {
+        if (range.min) searchFilters.minPrice = range.min
+        if (range.max) searchFilters.maxPrice = range.max
+      }
+    }
+
+    await search(searchFilters)
+
     if (onFilter) {
       onFilter(newFilters)
     }
   }
 
-  const clearFilters = () => {
+  const clearFilters = async () => {
     const clearedFilters = {
       category: '',
       priceRange: '',
@@ -92,6 +154,14 @@ export function SearchBar({
       inStock: false
     }
     setFilters(clearedFilters)
+    
+    // Clear search
+    await search({
+      query: searchQuery,
+      sortBy: 'name',
+      sortOrder: 'asc'
+    })
+    
     if (onFilter) {
       onFilter(clearedFilters)
     }
