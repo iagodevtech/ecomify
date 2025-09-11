@@ -4,77 +4,50 @@ import React from 'react'
 import { motion } from 'framer-motion'
 import { 
   ShoppingCart, 
-  Trash2, 
-  Plus, 
-  Minus, 
   ArrowLeft, 
-  CreditCard, 
+  Trash2,
+  Plus,
+  Minus,
+  CreditCard,
   Truck,
   Shield,
-  Zap,
   Heart,
-  X
+  Eye
 } from 'lucide-react'
 import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { useCart } from '@/components/providers'
 import { formatPrice } from '@/lib/stripe'
 
-// Mock data - em produção viria do contexto
-const mockCartItems = [
+// Mock data - em produção viria do contexto do carrinho
+const cartItems = [
   {
     id: '1',
-    name: 'MacBook Pro 16" M3 Max',
-    price: 15999,
-    quantity: 1,
-    image: '/images/products/macbook-pro.jpg',
+    name: 'MacBook Pro M3 Max 16"',
     brand: 'Apple',
+    price: 15999,
+    originalPrice: 17999,
+    image: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=800&h=600&fit=crop&crop=center',
+    quantity: 1,
     inStock: true
   },
   {
     id: '2',
     name: 'iPhone 15 Pro Max',
-    price: 8999,
-    quantity: 2,
-    image: '/images/products/iphone-15-pro.jpg',
     brand: 'Apple',
+    price: 8999,
+    originalPrice: 9999,
+    image: 'https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=800&h=600&fit=crop&crop=center',
+    quantity: 2,
     inStock: true
-  },
-  {
-    id: '3',
-    name: 'Samsung Galaxy S24 Ultra',
-    price: 7999,
-    quantity: 1,
-    image: '/images/products/galaxy-s24.jpg',
-    brand: 'Samsung',
-    inStock: false
   }
 ]
 
 export default function CarrinhoPage() {
-  const { itemCount } = useCart()
-  const [cartItems, setCartItems] = React.useState(mockCartItems)
-
-  const updateQuantity = (id: string, newQuantity: number) => {
-    if (newQuantity <= 0) {
-      removeItem(id)
-      return
-    }
-    setCartItems(items => 
-      items.map(item => 
-        item.id === id ? { ...item, quantity: newQuantity } : item
-      )
-    )
-  }
-
-  const removeItem = (id: string) => {
-    setCartItems(items => items.filter(item => item.id !== id))
-  }
-
   const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
-  const shipping = subtotal > 500 ? 0 : 25
+  const discount = cartItems.reduce((sum, item) => sum + ((item.originalPrice - item.price) * item.quantity), 0)
+  const shipping = subtotal > 5000 ? 0 : 150
   const total = subtotal + shipping
 
   return (
@@ -99,7 +72,7 @@ export default function CarrinhoPage() {
               Voltar
             </Button>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-neon-blue to-neon-purple rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-gradient-to-br from-neon-green to-neon-blue rounded-lg flex items-center justify-center">
                 <ShoppingCart className="w-6 h-6 text-white" />
               </div>
               <h1 className="text-3xl md:text-4xl font-bold text-white">
@@ -111,98 +84,107 @@ export default function CarrinhoPage() {
       </section>
 
       <div className="container mx-auto px-4 pb-16">
-        {cartItems.length === 0 ? (
-          /* Empty Cart */
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-center py-16"
-          >
-            <div className="w-32 h-32 bg-gradient-to-br from-neon-blue/20 to-neon-purple/20 rounded-full flex items-center justify-center mx-auto mb-6">
-              <ShoppingCart className="w-16 h-16 text-neon-blue" />
-            </div>
-            <h2 className="text-2xl font-bold text-white mb-4">Seu carrinho está vazio</h2>
-            <p className="text-cyber-300 mb-8">Que tal adicionar alguns produtos incríveis?</p>
-            <Button 
-              className="cyber-button bg-gradient-to-r from-neon-blue to-neon-purple text-white"
-              onClick={() => window.location.href = '/produtos'}
-            >
-              <Zap className="w-5 h-5 mr-2" />
-              Explorar Produtos
-            </Button>
-          </motion.div>
-        ) : (
+        {cartItems.length > 0 ? (
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Cart Items */}
             <div className="lg:col-span-2">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
+                transition={{ duration: 0.6, delay: 0.1 }}
                 className="space-y-4"
               >
                 {cartItems.map((item, index) => (
                   <motion.div
                     key={item.id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.6, delay: index * 0.1 }}
-                    className="bg-dark-800/50 border border-cyber-500/30 rounded-xl p-6 hover:border-neon-blue/50 transition-all"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 0.2 + index * 0.1 }}
+                    className="bg-dark-800/50 border border-cyber-500/30 rounded-xl p-6"
                   >
-                    <div className="flex items-center gap-4">
+                    <div className="flex gap-4">
                       {/* Product Image */}
-                      <div className="w-20 h-20 bg-gradient-to-br from-neon-blue/20 to-neon-purple/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <ShoppingCart className="w-8 h-8 text-neon-blue" />
+                      <div className="w-24 h-24 bg-gradient-to-br from-neon-blue/20 to-neon-purple/20 rounded-lg overflow-hidden flex-shrink-0">
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="w-full h-full object-cover"
+                        />
                       </div>
 
                       {/* Product Info */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-start justify-between mb-2">
                           <div>
-                            <h3 className="text-white font-semibold text-lg mb-1">{item.name}</h3>
-                            <p className="text-cyber-400 text-sm mb-2">{item.brand}</p>
-                            <div className="flex items-center gap-2">
-                              <Badge className={item.inStock ? "bg-neon-green/20 text-neon-green border-neon-green/30" : "bg-red-400/20 text-red-400 border-red-400/30"}>
-                                {item.inStock ? 'Em Estoque' : 'Fora de Estoque'}
-                              </Badge>
-                            </div>
+                            <p className="text-cyber-400 text-sm mb-1">{item.brand}</p>
+                            <h3 className="text-white font-semibold text-lg mb-2">
+                              {item.name}
+                            </h3>
                           </div>
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => removeItem(item.id)}
                             className="text-cyber-400 hover:text-red-400"
                           >
-                            <X className="w-4 h-4" />
+                            <Trash2 className="w-4 h-4" />
                           </Button>
                         </div>
-                      </div>
 
-                      {/* Quantity and Price */}
-                      <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                            className="w-8 h-8 p-0 text-cyber-400 hover:text-neon-blue"
-                          >
-                            <Minus className="w-4 h-4" />
-                          </Button>
-                          <span className="text-white font-semibold w-8 text-center">{item.quantity}</span>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                            className="w-8 h-8 p-0 text-cyber-400 hover:text-neon-blue"
-                          >
-                            <Plus className="w-4 h-4" />
-                          </Button>
+                        {/* Price */}
+                        <div className="flex items-center gap-2 mb-4">
+                          <span className="text-white font-bold text-lg">
+                            {formatPrice(item.price)}
+                          </span>
+                          {item.originalPrice > item.price && (
+                            <span className="text-cyber-400 text-sm line-through">
+                              {formatPrice(item.originalPrice)}
+                            </span>
+                          )}
                         </div>
-                        <div className="text-right">
-                          <p className="text-white font-bold text-lg">{formatPrice(item.price * item.quantity)}</p>
-                          <p className="text-cyber-400 text-sm">{formatPrice(item.price)} cada</p>
+
+                        {/* Quantity Controls */}
+                        <div className="flex items-center gap-3">
+                          <span className="text-cyber-300 text-sm">Quantidade:</span>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="w-8 h-8 p-0 border-cyber-500 text-cyber-400 hover:border-neon-blue hover:text-neon-blue"
+                            >
+                              <Minus className="w-3 h-3" />
+                            </Button>
+                            <span className="text-white font-medium w-8 text-center">
+                              {item.quantity}
+                            </span>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="w-8 h-8 p-0 border-cyber-500 text-cyber-400 hover:border-neon-blue hover:text-neon-blue"
+                            >
+                              <Plus className="w-3 h-3" />
+                            </Button>
+                          </div>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex gap-2 mt-4">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="border-cyber-500 text-cyber-400 hover:border-neon-pink hover:text-neon-pink"
+                            onClick={() => window.location.href = '/favoritos'}
+                          >
+                            <Heart className="w-4 h-4 mr-2" />
+                            Favoritos
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="border-cyber-500 text-cyber-400 hover:border-neon-blue hover:text-neon-blue"
+                          >
+                            <Eye className="w-4 h-4 mr-2" />
+                            Ver Detalhes
+                          </Button>
                         </div>
                       </div>
                     </div>
@@ -219,66 +201,109 @@ export default function CarrinhoPage() {
                 transition={{ duration: 0.6, delay: 0.3 }}
                 className="bg-dark-800/50 border border-cyber-500/30 rounded-xl p-6 sticky top-24"
               >
-                <h2 className="text-white font-bold text-xl mb-6">Resumo do Pedido</h2>
-                
+                <h3 className="text-white font-bold text-xl mb-6">Resumo do Pedido</h3>
+
+                {/* Order Details */}
                 <div className="space-y-4 mb-6">
-                  <div className="flex justify-between">
-                    <span className="text-cyber-300">Subtotal ({cartItems.length} itens)</span>
-                    <span className="text-white font-semibold">{formatPrice(subtotal)}</span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-cyber-300">Subtotal:</span>
+                    <span className="text-white font-medium">{formatPrice(subtotal)}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-cyber-300">Frete</span>
-                    <span className="text-white font-semibold">
+                  
+                  {discount > 0 && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-neon-green">Desconto:</span>
+                      <span className="text-neon-green font-medium">-{formatPrice(discount)}</span>
+                    </div>
+                  )}
+                  
+                  <div className="flex justify-between items-center">
+                    <span className="text-cyber-300">Frete:</span>
+                    <span className="text-white font-medium">
                       {shipping === 0 ? 'Grátis' : formatPrice(shipping)}
                     </span>
                   </div>
-                  {shipping > 0 && (
-                    <p className="text-cyber-400 text-sm">
-                      Frete grátis em compras acima de {formatPrice(500)}
-                    </p>
-                  )}
-                  <hr className="border-cyber-500/30" />
-                  <div className="flex justify-between">
-                    <span className="text-white font-bold text-lg">Total</span>
-                    <span className="text-white font-bold text-lg">{formatPrice(total)}</span>
+                  
+                  <div className="border-t border-cyber-500/30 pt-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-white font-bold text-lg">Total:</span>
+                      <span className="text-white font-bold text-lg">{formatPrice(total)}</span>
+                    </div>
                   </div>
                 </div>
 
-                <Button 
-                  className="w-full cyber-button bg-gradient-to-r from-neon-blue to-neon-purple text-white mb-4"
+                {/* Benefits */}
+                <div className="space-y-3 mb-6">
+                  <div className="flex items-center gap-3 text-cyber-300 text-sm">
+                    <Truck className="w-4 h-4 text-neon-green" />
+                    <span>Frete grátis para pedidos acima de R$ 5.000</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-cyber-300 text-sm">
+                    <Shield className="w-4 h-4 text-neon-blue" />
+                    <span>Compra 100% segura</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-cyber-300 text-sm">
+                    <CreditCard className="w-4 h-4 text-neon-purple" />
+                    <span>Parcelamento em até 12x sem juros</span>
+                  </div>
+                </div>
+
+                {/* Checkout Button */}
+                <Button
+                  className="w-full cyber-button bg-gradient-to-r from-neon-green to-neon-blue text-white mb-4"
                   onClick={() => window.location.href = '/checkout'}
                 >
                   <CreditCard className="w-5 h-5 mr-2" />
                   Finalizar Compra
                 </Button>
 
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="w-full border-cyber-500 text-cyber-400 hover:border-neon-blue hover:text-neon-blue"
                   onClick={() => window.location.href = '/produtos'}
                 >
-                  <Zap className="w-5 h-5 mr-2" />
                   Continuar Comprando
                 </Button>
-
-                {/* Security Badges */}
-                <div className="mt-6 pt-6 border-t border-cyber-500/30">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Shield className="w-4 h-4 text-neon-green" />
-                    <span className="text-cyber-300 text-sm">Compra 100% Segura</span>
-                  </div>
-                  <div className="flex items-center gap-2 mb-3">
-                    <Truck className="w-4 h-4 text-neon-blue" />
-                    <span className="text-cyber-300 text-sm">Entrega Rápida</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Heart className="w-4 h-4 text-neon-pink" />
-                    <span className="text-cyber-300 text-sm">Garantia Estendida</span>
-                  </div>
-                </div>
               </motion.div>
             </div>
           </div>
+        ) : (
+          /* Empty Cart */
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="text-center py-16"
+          >
+            <div className="w-32 h-32 bg-gradient-to-br from-neon-blue/20 to-neon-purple/20 rounded-full flex items-center justify-center mx-auto mb-6">
+              <ShoppingCart className="w-16 h-16 text-cyber-400" />
+            </div>
+            
+            <h2 className="text-2xl font-bold text-white mb-4">
+              Seu carrinho está vazio
+            </h2>
+            
+            <p className="text-cyber-300 mb-8 max-w-md mx-auto">
+              Que tal adicionar alguns produtos incríveis ao seu carrinho? 
+              Explore nossa seleção de tecnologia de ponta!
+            </p>
+            
+            <div className="flex gap-4 justify-center">
+              <Button
+                className="cyber-button bg-gradient-to-r from-neon-blue to-neon-purple text-white"
+                onClick={() => window.location.href = '/produtos'}
+              >
+                Ver Produtos
+              </Button>
+              <Button
+                variant="outline"
+                className="border-cyber-500 text-cyber-400 hover:border-neon-blue hover:text-neon-blue"
+                onClick={() => window.location.href = '/mais-vendidos'}
+              >
+                Mais Vendidos
+              </Button>
+            </div>
+          </motion.div>
         )}
       </div>
 

@@ -278,3 +278,79 @@ body {
     display: none;
   }
 }
+
+/* Suave hover effects */
+.hover-smooth {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hover-smooth:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0, 245, 255, 0.15);
+}
+
+.hover-text-smooth {
+  transition: color 0.2s ease-in-out, text-shadow 0.2s ease-in-out;
+}
+
+.hover-text-smooth:hover {
+  text-shadow: 0 0 8px currentColor;
+}
+
+.hover-bg-smooth {
+  transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+}
+
+.hover-bg-smooth:hover {
+  background-color: rgba(0, 245, 255, 0.1);
+  border-color: rgba(0, 245, 255, 0.3);
+}
+
+/* Product card hover effects */
+.product-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
+}
+
+.product-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 
+    0 20px 40px rgba(0, 0, 0, 0.3),
+    0 0 20px rgba(0, 245, 255, 0.1);
+  border-color: rgba(0, 245, 255, 0.4);
+}
+
+.product-card:hover .product-image {
+  transform: scale(1.05);
+}
+
+.product-image {
+  transition: transform 0.3s ease-in-out;
+}
+
+/* Button hover effects */
+.btn-smooth {
+  transition: all 0.2s ease-in-out;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-smooth:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 15px rgba(0, 245, 255, 0.3);
+}
+
+.btn-smooth::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.5s ease-in-out;
+}
+
+.btn-smooth:hover::before {
+  left: 100%;
+}

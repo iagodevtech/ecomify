@@ -4,6 +4,7 @@ import './globals.css'
 import { Providers } from '@/components/providers'
 import { Toaster } from 'react-hot-toast'
 import { MatrixRain } from '@/components/effects/matrix-rain'
+import { ChatWidget } from '@/components/chat/chat-widget'
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -89,6 +90,7 @@ export default function RootLayout({
         <MatrixRain />
         <Providers>
           {children}
+          <ChatWidget />
           <Toaster
             position="top-right"
             toastOptions={{

@@ -99,10 +99,18 @@ export function Header() {
             </motion.a>
             
             <motion.a
-              href="/promocoes"
+              href="/categorias"
               className="text-cyber-300 hover:text-neon-blue transition-colors font-medium relative group"
             >
-              Promoções
+              Categorias
+              <div className="absolute -bottom-1 left-0 w-0 h-0.5 bg-neon-blue transition-all group-hover:w-full" />
+            </motion.a>
+            
+            <motion.a
+              href="/mais-vendidos"
+              className="text-cyber-300 hover:text-neon-blue transition-colors font-medium relative group"
+            >
+              Mais Vendidos
               <div className="absolute -bottom-1 left-0 w-0 h-0.5 bg-neon-blue transition-all group-hover:w-full" />
             </motion.a>
             
