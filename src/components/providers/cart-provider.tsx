@@ -18,11 +18,17 @@ interface CartContextType {
   items: CartItem[]
   itemCount: number
   total: number
+  subtotal: number
+  shipping: number
+  discount: number
   addItem: (product: Omit<CartItem, 'id' | 'quantity'>) => void
   removeItem: (productId: string) => void
   updateQuantity: (productId: string, quantity: number) => void
   clearCart: () => void
   loading: boolean
+  syncCart: () => Promise<void>
+  applyCoupon: (code: string) => Promise<{ success: boolean; message: string }>
+  removeCoupon: () => void
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
@@ -30,10 +36,14 @@ const CartContext = createContext<CartContextType | undefined>(undefined)
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([])
   const [loading, setLoading] = useState(false)
+  const [discount, setDiscount] = useState(0)
+  const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null)
   const { user } = useAuth()
 
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0)
-  const total = items.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+  const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+  const shipping = subtotal > 5000 ? 0 : 150 // Frete grátis acima de R$ 50
+  const total = subtotal + shipping - discount
 
   // Load cart from localStorage or database
   useEffect(() => {
@@ -125,18 +135,89 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const clearCart = () => {
     setItems([])
+    setDiscount(0)
+    setAppliedCoupon(null)
     saveCartToLocalStorage([])
+  }
+
+  const syncCart = async () => {
+    if (!user) return
+
+    try {
+      setLoading(true)
+      const { data, error } = await supabase
+        .from('cart_items')
+        .select('*')
+        .eq('user_id', user.id)
+
+      if (error) throw error
+
+      if (data) {
+        setItems(data.map(item => ({
+          id: item.id,
+          product_id: item.product_id,
+          name: item.name,
+          price: item.price,
+          quantity: item.quantity,
+          image: item.image,
+          brand: item.brand
+        })))
+      }
+    } catch (error) {
+      console.error('Error syncing cart:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const applyCoupon = async (code: string): Promise<{ success: boolean; message: string }> => {
+    try {
+      const response = await fetch('/api/coupons/validate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          code,
+          userId: user?.id,
+          subtotal
+        })
+      })
+
+      const data = await response.json()
+
+      if (data.valid) {
+        setDiscount(data.discount)
+        setAppliedCoupon(code)
+        return { success: true, message: 'Cupom aplicado com sucesso!' }
+      } else {
+        return { success: false, message: data.message || 'Cupom inválido' }
+      }
+    } catch (error) {
+      return { success: false, message: 'Erro ao validar cupom' }
+    }
+  }
+
+  const removeCoupon = () => {
+    setDiscount(0)
+    setAppliedCoupon(null)
   }
 
   const value = {
     items,
     itemCount,
     total,
+    subtotal,
+    shipping,
+    discount,
     addItem,
     removeItem,
     updateQuantity,
     clearCart,
     loading,
+    syncCart,
+    applyCoupon,
+    removeCoupon,
   }
 
   return (

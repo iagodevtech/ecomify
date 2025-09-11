@@ -18,18 +18,22 @@ import {
   QrCode,
   ArrowLeft,
   Save,
-  Trash2
+  Trash2,
+  X
 } from 'lucide-react'
 import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { use2FA } from '@/hooks/use-2fa'
+import { TwoFactorSetup } from '@/components/auth/two-factor-setup'
+import { ProtectedRoute } from '@/components/auth/protected-route'
 
 export default function ConfiguracoesPage() {
   const [activeTab, setActiveTab] = useState('security')
   const [showPassword, setShowPassword] = useState(false)
   const [showBackupCodes, setShowBackupCodes] = useState(false)
+  const [show2FASetup, setShow2FASetup] = useState(false)
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -93,8 +97,9 @@ export default function ConfiguracoesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-dark-900">
-      <Header />
+    <ProtectedRoute>
+      <div className="min-h-screen bg-dark-900">
+        <Header />
       
       {/* Hero Section */}
       <section className="pt-24 pb-8 bg-gradient-to-br from-dark-900 via-dark-800 to-dark-900">
@@ -436,7 +441,28 @@ export default function ConfiguracoesPage() {
         </div>
       )}
 
+      {/* 2FA Setup Modal */}
+      {show2FASetup && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-dark-900 border border-cyber-500/30 rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-cyber-500/30 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-white">Configurar 2FA</h2>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShow2FASetup(false)}
+                className="text-cyber-400 hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </Button>
+            </div>
+            <TwoFactorSetup onComplete={() => setShow2FASetup(false)} />
+          </div>
+        </div>
+      )}
+
       <Footer />
-    </div>
+      </div>
+    </ProtectedRoute>
   )
 }
