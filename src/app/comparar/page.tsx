@@ -30,7 +30,6 @@ import {
   Bluetooth,
   Battery,
   Cpu,
-  Memory,
   HardDrive,
   Eye,
   Heart,
@@ -262,7 +261,7 @@ export default function ComparePage() {
   const getSpecIcon = (spec: string) => {
     const iconMap: { [key: string]: any } = {
       processor: Cpu,
-      ram: Memory,
+      ram: HardDrive,
       storage: HardDrive,
       display: Monitor,
       graphics: Zap,

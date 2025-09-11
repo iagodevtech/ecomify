@@ -82,3 +82,8 @@ export function formatCurrency(amount: number): string {
     currency: 'BRL'
   }).format(amount)
 }
+
+// Format price (alias for formatCurrency)
+export function formatPrice(amount: number): string {
+  return formatCurrency(amount)
+}
