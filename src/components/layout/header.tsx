@@ -140,18 +140,6 @@ export function Header() {
             </Button>
 
             {/* Notifications */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="relative text-cyber-400 hover:text-neon-blue"
-            >
-              <Bell className="w-5 h-5" />
-              <Badge className="absolute -top-1 -right-1 w-5 h-5 p-0 text-xs bg-neon-pink">
-                3
-              </Badge>
-            </Button>
-
-            {/* Notifications */}
             <NotificationCenter />
 
             {/* Wishlist */}

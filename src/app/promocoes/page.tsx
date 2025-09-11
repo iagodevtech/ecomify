@@ -3,568 +3,436 @@
 import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { 
-  Tag, 
   Gift, 
-  Zap, 
   Clock, 
   Star, 
-  TrendingUp, 
-  Award, 
-  Crown,
-  Sparkles,
-  Target,
-  Calendar,
-  Percent,
-  DollarSign,
+  Heart, 
   ShoppingCart,
-  Heart,
-  Eye,
-  Copy,
-  Check,
-  X,
+  Zap,
+  Percent,
+  Tag,
   ArrowRight,
-  Fire,
-  Rocket,
-  Diamond,
-  Shield,
-  Truck,
-  Smartphone,
-  Laptop,
-  Headphones,
-  Gamepad,
-  Monitor,
-  Package
+  Timer
 } from 'lucide-react'
-import { Header } from '@/components/layout/header'
+import { AppLayout } from '@/components/layout/app-layout'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { products } from '@/data/products'
 import { formatPrice } from '@/lib/utils'
+import { useCart } from '@/components/providers'
 
-// Mock data
-const promotions = [
-  {
-    id: '1',
-    title: 'Black Friday Tech',
-    description: 'Até 70% de desconto em produtos de tecnologia',
-    type: 'sale',
-    discount: 70,
-    discountType: 'percentage',
-    minValue: 500,
-    maxDiscount: 2000,
-    validUntil: '2024-12-31',
-    isActive: true,
-    isExclusive: true,
-    usageCount: 1247,
-    maxUsage: 5000,
-    category: 'all',
-    icon: Fire,
-    color: 'from-red-500 to-orange-500',
-    bgColor: 'from-red-500/10 to-orange-500/10',
-    borderColor: 'border-red-500/30',
-    products: [
-      { name: 'MacBook Pro M3 Max', originalPrice: 17999, discountPrice: 10799 },
-      { name: 'iPhone 15 Pro Max', originalPrice: 9999, discountPrice: 5999 },
-      { name: 'Sony WH-1000XM5', originalPrice: 1499, discountPrice: 899 }
-    ]
-  },
-  {
-    id: '2',
-    title: 'Frete Grátis Premium',
-    description: 'Frete grátis em todos os pedidos acima de R$ 200',
-    type: 'shipping',
-    discount: 0,
-    discountType: 'shipping',
-    minValue: 200,
-    validUntil: '2024-12-31',
-    isActive: true,
-    isExclusive: false,
-    usageCount: 3456,
-    maxUsage: null,
-    category: 'all',
-    icon: Truck,
-    color: 'from-neon-green to-cyber-600',
-    bgColor: 'from-neon-green/10 to-cyber-600/10',
-    borderColor: 'border-neon-green/30',
-    products: []
-  },
-  {
-    id: '3',
-    title: 'Cliente VIP',
-    description: '15% de desconto exclusivo para clientes VIP',
-    type: 'vip',
-    discount: 15,
-    discountType: 'percentage',
-    minValue: 1000,
-    validUntil: '2024-12-31',
-    isActive: true,
-    isExclusive: true,
-    usageCount: 89,
-    maxUsage: 500,
-    category: 'premium',
-    icon: Crown,
-    color: 'from-yellow-500 to-orange-500',
-    bgColor: 'from-yellow-500/10 to-orange-500/10',
-    borderColor: 'border-yellow-500/30',
-    products: []
-  },
-  {
-    id: '4',
-    title: 'Primeira Compra',
-    description: 'R$ 200 de desconto na sua primeira compra',
-    type: 'first-purchase',
-    discount: 200,
-    discountType: 'fixed',
-    minValue: 500,
-    validUntil: '2024-12-31',
-    isActive: true,
-    isExclusive: false,
-    usageCount: 2341,
-    maxUsage: 10000,
-    category: 'all',
-    icon: Gift,
-    color: 'from-neon-blue to-neon-purple',
-    bgColor: 'from-neon-blue/10 to-neon-purple/10',
-    borderColor: 'border-neon-blue/30',
-    products: []
-  },
-  {
-    id: '5',
-    title: 'Gaming Week',
-    description: 'Até 50% de desconto em produtos para gaming',
-    type: 'category',
-    discount: 50,
-    discountType: 'percentage',
-    minValue: 300,
-    validUntil: '2024-12-31',
-    isActive: true,
-    isExclusive: false,
-    usageCount: 567,
-    maxUsage: 2000,
-    category: 'gaming',
-    icon: Gamepad,
-    color: 'from-neon-purple to-neon-pink',
-    bgColor: 'from-neon-purple/10 to-neon-pink/10',
-    borderColor: 'border-neon-purple/30',
-    products: [
-      { name: 'ASUS ROG Zephyrus G14', originalPrice: 10999, discountPrice: 5499 },
-      { name: 'RTX 4090 Gaming PC', originalPrice: 21999, discountPrice: 10999 }
-    ]
-  },
-  {
-    id: '6',
-    title: 'Cashback 10%',
-    description: '10% de cashback em todas as compras',
-    type: 'cashback',
-    discount: 10,
-    discountType: 'cashback',
-    minValue: 100,
-    validUntil: '2024-12-31',
-    isActive: true,
-    isExclusive: false,
-    usageCount: 4567,
-    maxUsage: null,
-    category: 'all',
-    icon: Diamond,
-    color: 'from-cyan-500 to-blue-500',
-    bgColor: 'from-cyan-500/10 to-blue-500/10',
-    borderColor: 'border-cyan-500/30',
-    products: []
-  }
-]
-
-const coupons = [
-  {
-    id: '1',
-    code: 'WELCOME10',
-    description: '10% de desconto para novos clientes',
-    discount: 10,
-    type: 'percentage',
-    minValue: 1000,
-    validUntil: '2024-12-31',
-    isActive: true,
-    usageCount: 1247,
-    maxUsage: 5000,
-    category: 'all'
-  },
-  {
-    id: '2',
-    code: 'TECH20',
-    description: 'R$ 200 de desconto em produtos de tecnologia',
-    discount: 200,
-    type: 'fixed',
-    minValue: 2000,
-    validUntil: '2024-12-31',
-    isActive: true,
-    usageCount: 567,
-    maxUsage: 2000,
-    category: 'technology'
-  },
-  {
-    id: '3',
-    code: 'VIP15',
-    description: '15% de desconto para clientes VIP',
-    discount: 15,
-    type: 'percentage',
-    minValue: 5000,
-    validUntil: '2024-12-31',
-    isActive: false,
-    usageCount: 89,
-    maxUsage: 500,
-    category: 'premium'
-  },
-  {
-    id: '4',
-    code: 'GAMING25',
-    description: '25% de desconto em produtos gaming',
-    discount: 25,
-    type: 'percentage',
-    minValue: 500,
-    validUntil: '2024-12-31',
-    isActive: true,
-    usageCount: 234,
-    maxUsage: 1000,
-    category: 'gaming'
-  }
-]
-
-const categories = [
-  { id: 'all', name: 'Todas', icon: Package },
-  { id: 'sale', name: 'Promoções', icon: Tag },
-  { id: 'shipping', name: 'Frete', icon: Truck },
-  { id: 'vip', name: 'VIP', icon: Crown },
-  { id: 'first-purchase', name: 'Primeira Compra', icon: Gift },
-  { id: 'category', name: 'Categoria', icon: Target },
-  { id: 'cashback', name: 'Cashback', icon: Diamond }
-]
-
-export default function PromotionsPage() {
-  const [selectedCategory, setSelectedCategory] = useState('all')
-  const [copiedCode, setCopiedCode] = useState<string | null>(null)
-
-  const filteredPromotions = selectedCategory === 'all' 
-    ? promotions 
-    : promotions.filter(promo => promo.type === selectedCategory)
-
-  const copyToClipboard = async (code: string) => {
-    try {
-      await navigator.clipboard.writeText(code)
-      setCopiedCode(code)
-      setTimeout(() => setCopiedCode(null), 2000)
-    } catch (err) {
-      console.error('Failed to copy: ', err)
-    }
+export default function PromocoesPage() {
+  const { addItem } = useCart()
+  
+  // Filter products with discounts
+  const promotionalProducts = products.filter(product => product.originalPrice && product.originalPrice > product.price)
+  
+  // Calculate discount percentage
+  const getDiscountPercentage = (originalPrice: number, currentPrice: number) => {
+    return Math.round(((originalPrice - currentPrice) / originalPrice) * 100)
   }
 
-  const getCategoryIcon = (category: string) => {
-    const iconMap: { [key: string]: any } = {
-      'Laptops': Laptop,
-      'Smartphones': Smartphone,
-      'Áudio': Headphones,
-      'Gaming': Gamepad,
-      'Monitores': Monitor
-    }
-    return iconMap[category] || Package
-  }
+  // Flash deals (products with high discounts)
+  const flashDeals = promotionalProducts
+    .filter(product => {
+      const discount = getDiscountPercentage(product.originalPrice!, product.price)
+      return discount >= 20
+    })
+    .slice(0, 4)
 
-  const getUsagePercentage = (usageCount: number, maxUsage: number | null) => {
-    if (!maxUsage) return 0
-    return Math.min((usageCount / maxUsage) * 100, 100)
+  // Limited time offers
+  const limitedOffers = promotionalProducts
+    .filter(product => product.isFeatured)
+    .slice(0, 6)
+
+  const handleAddToCart = (product: any) => {
+    addItem({
+      product_id: product.id,
+      name: product.name,
+      price: product.price,
+      image: product.images[0],
+      brand: product.brand
+    })
   }
 
   return (
-    <>
-      <Header />
+    <AppLayout>
       <div className="min-h-screen bg-dark-900 pt-16 lg:pt-20">
         <div className="container mx-auto px-4 py-8">
           {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-4xl font-bold font-cyber mb-4">
-              <span className="cyber-text bg-gradient-to-r from-neon-green to-neon-blue bg-clip-text text-transparent">
-                Promoções e Cupons
-              </span>
-            </h1>
-            <p className="text-cyber-400">
-              Aproveite nossas ofertas exclusivas e economize em suas compras
-            </p>
+          <div className="text-center mb-12">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-6"
+            >
+              <div className="w-20 h-20 mx-auto bg-gradient-to-br from-neon-pink to-neon-purple rounded-full flex items-center justify-center mb-4">
+                <Gift className="w-10 h-10 text-white" />
+              </div>
+              <h1 className="text-5xl font-bold font-cyber mb-4">
+                <span className="cyber-text bg-gradient-to-r from-neon-pink to-neon-purple bg-clip-text text-transparent">
+                  Promoções
+                </span>
+              </h1>
+              <p className="text-cyber-400 text-lg max-w-2xl mx-auto">
+                Aproveite nossas ofertas especiais e economize em produtos de tecnologia de última geração
+              </p>
+            </motion.div>
+
+            {/* Promo Banner */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.2 }}
+              className="bg-gradient-to-r from-neon-pink/20 to-neon-purple/20 border border-neon-pink/30 rounded-2xl p-8 mb-8"
+            >
+              <div className="flex items-center justify-center gap-4 mb-4">
+                <Timer className="w-8 h-8 text-neon-pink" />
+                <h2 className="text-3xl font-bold text-white">Ofertas Relâmpago</h2>
+                <Timer className="w-8 h-8 text-neon-pink" />
+              </div>
+              <p className="text-cyber-300 text-lg mb-4">
+                Descontos de até 50% em produtos selecionados
+              </p>
+              <div className="flex items-center justify-center gap-2 text-neon-pink font-bold text-xl">
+                <Clock className="w-6 h-6" />
+                <span>Termina em: 23:59:59</span>
+              </div>
+            </motion.div>
           </div>
 
-          {/* Categories */}
-          <div className="mb-8">
-            <div className="flex flex-wrap gap-2">
-              {categories.map((category) => (
-                <button
-                  key={category.id}
-                  onClick={() => setSelectedCategory(category.id)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
-                    selectedCategory === category.id
-                      ? 'bg-neon-green/20 text-neon-green border border-neon-green/50'
-                      : 'text-cyber-400 hover:text-white hover:bg-cyber-800/50'
-                  }`}
-                >
-                  <category.icon className="w-4 h-4" />
-                  {category.name}
-                </button>
-              ))}
+          {/* Flash Deals */}
+          <section className="mb-12">
+            <div className="flex items-center gap-3 mb-8">
+              <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-orange-500 rounded-lg flex items-center justify-center">
+                <Zap className="w-6 h-6 text-white" />
+              </div>
+              <h2 className="text-3xl font-bold text-white">Ofertas Relâmpago</h2>
+              <Badge className="bg-red-500/20 text-red-400 border-red-500/50">
+                <Clock className="w-4 h-4 mr-1" />
+                Limitado
+              </Badge>
             </div>
-          </div>
 
-          {/* Promotions Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-            {filteredPromotions.map((promotion, index) => (
-              <motion.div
-                key={promotion.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className={`bg-gradient-to-br ${promotion.bgColor} backdrop-blur-sm border ${promotion.borderColor} rounded-2xl p-6 relative overflow-hidden`}
-              >
-                {/* Exclusive Badge */}
-                {promotion.isExclusive && (
-                  <div className="absolute top-4 right-4">
-                    <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-0">
-                      <Crown className="w-3 h-3 mr-1" />
-                      Exclusivo
-                    </Badge>
-                  </div>
-                )}
-
-                {/* Header */}
-                <div className="flex items-center gap-4 mb-4">
-                  <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${promotion.color} flex items-center justify-center`}>
-                    <promotion.icon className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-white font-bold text-lg">{promotion.title}</h3>
-                    <p className="text-cyber-300 text-sm">{promotion.description}</p>
-                  </div>
-                </div>
-
-                {/* Discount Info */}
-                <div className="mb-4">
-                  {promotion.discountType === 'percentage' && (
-                    <div className="flex items-center gap-2">
-                      <span className="text-3xl font-bold text-white">{promotion.discount}%</span>
-                      <span className="text-cyber-300">OFF</span>
-                    </div>
-                  )}
-                  {promotion.discountType === 'fixed' && (
-                    <div className="flex items-center gap-2">
-                      <span className="text-3xl font-bold text-white">{formatPrice(promotion.discount)}</span>
-                      <span className="text-cyber-300">OFF</span>
-                    </div>
-                  )}
-                  {promotion.discountType === 'shipping' && (
-                    <div className="flex items-center gap-2">
-                      <Truck className="w-6 h-6 text-neon-green" />
-                      <span className="text-xl font-bold text-white">Frete Grátis</span>
-                    </div>
-                  )}
-                  {promotion.discountType === 'cashback' && (
-                    <div className="flex items-center gap-2">
-                      <Diamond className="w-6 h-6 text-cyan-400" />
-                      <span className="text-xl font-bold text-white">{promotion.discount}% Cashback</span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Conditions */}
-                <div className="mb-4 space-y-2">
-                  <div className="flex items-center gap-2 text-cyber-300 text-sm">
-                    <DollarSign className="w-4 h-4" />
-                    <span>Mínimo: {formatPrice(promotion.minValue)}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-cyber-300 text-sm">
-                    <Calendar className="w-4 h-4" />
-                    <span>Válido até: {promotion.validUntil}</span>
-                  </div>
-                  {promotion.maxDiscount && (
-                    <div className="flex items-center gap-2 text-cyber-300 text-sm">
-                      <Target className="w-4 h-4" />
-                      <span>Máximo: {formatPrice(promotion.maxDiscount)}</span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Usage Progress */}
-                {promotion.maxUsage && (
-                  <div className="mb-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-cyber-300 text-sm">Uso</span>
-                      <span className="text-cyber-300 text-sm">
-                        {promotion.usageCount.toLocaleString()} / {promotion.maxUsage.toLocaleString()}
-                      </span>
-                    </div>
-                    <div className="w-full h-2 bg-cyber-700 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-gradient-to-r from-neon-green to-neon-blue transition-all"
-                        style={{ width: `${getUsagePercentage(promotion.usageCount, promotion.maxUsage)}%` }}
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {/* Featured Products */}
-                {promotion.products.length > 0 && (
-                  <div className="mb-4">
-                    <h4 className="text-white font-medium mb-2">Produtos em Destaque:</h4>
-                    <div className="space-y-2">
-                      {promotion.products.map((product, idx) => (
-                        <div key={idx} className="flex items-center justify-between p-2 bg-dark-700/30 rounded-lg">
-                          <span className="text-cyber-300 text-sm">{product.name}</span>
-                          <div className="text-right">
-                            <span className="text-white font-bold text-sm">{formatPrice(product.discountPrice)}</span>
-                            <span className="text-cyber-500 text-xs line-through ml-2">{formatPrice(product.originalPrice)}</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Action Button */}
-                <Button className="w-full cyber-button bg-gradient-to-r from-neon-green to-neon-blue text-white">
-                  <ShoppingCart className="w-4 h-4 mr-2" />
-                  Aproveitar Oferta
-                </Button>
-              </motion.div>
-            ))}
-          </div>
-
-          {/* Coupons Section */}
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
-              <Tag className="w-6 h-6 text-neon-blue" />
-              Cupons de Desconto
-            </h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {coupons.map((coupon, index) => (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {flashDeals.map((product, index) => (
                 <motion.div
-                  key={coupon.id}
+                  key={product.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
-                  className={`bg-dark-800/50 backdrop-blur-sm border ${
-                    coupon.isActive ? 'border-neon-green/30' : 'border-cyber-500/30'
-                  } rounded-2xl p-4`}
+                  className="bg-dark-800/50 backdrop-blur-sm border border-red-500/30 rounded-2xl p-6 hover:border-red-500/50 transition-all group relative overflow-hidden"
                 >
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <Tag className="w-4 h-4 text-neon-green" />
-                      <span className="text-white font-bold text-lg">{coupon.code}</span>
-                    </div>
-                    <Badge className={`text-xs ${
-                      coupon.isActive 
-                        ? 'bg-neon-green/20 text-neon-green border-neon-green/50' 
-                        : 'bg-cyber-500/20 text-cyber-500 border-cyber-500/50'
-                    }`}>
-                      {coupon.isActive ? 'Ativo' : 'Inativo'}
+                  {/* Discount Badge */}
+                  <div className="absolute top-4 left-4 z-10">
+                    <Badge className="bg-red-500/20 text-red-400 border-red-500/50">
+                      -{getDiscountPercentage(product.originalPrice!, product.price)}%
                     </Badge>
                   </div>
 
-                  <p className="text-cyber-300 text-sm mb-3">{coupon.description}</p>
-
-                  <div className="mb-3">
-                    <div className="flex items-center gap-2">
-                      {coupon.type === 'percentage' ? (
-                        <span className="text-2xl font-bold text-white">{coupon.discount}%</span>
-                      ) : (
-                        <span className="text-2xl font-bold text-white">{formatPrice(coupon.discount)}</span>
-                      )}
-                      <span className="text-cyber-300 text-sm">OFF</span>
+                  {/* Flash Deal Timer */}
+                  <div className="absolute top-4 right-4 z-10">
+                    <div className="bg-red-500/20 border border-red-500/50 rounded-lg px-2 py-1">
+                      <div className="flex items-center gap-1 text-red-400 text-xs font-bold">
+                        <Timer className="w-3 h-3" />
+                        <span>23:59</span>
+                      </div>
                     </div>
-                    <p className="text-cyber-400 text-xs">Mínimo: {formatPrice(coupon.minValue)}</p>
                   </div>
 
-                  <div className="mb-4">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-cyber-300 text-xs">Uso</span>
-                      <span className="text-cyber-300 text-xs">
-                        {coupon.usageCount.toLocaleString()} / {coupon.maxUsage?.toLocaleString() || '∞'}
+                  {/* Product Image */}
+                  <div className="w-full h-48 bg-gradient-to-br from-cyber-800 to-cyber-900 rounded-lg mb-4 flex items-center justify-center relative overflow-hidden">
+                    <div className="text-center">
+                      <div className="w-16 h-16 mx-auto bg-gradient-to-br from-neon-blue to-neon-purple rounded-full flex items-center justify-center mb-2">
+                        <Zap className="w-8 h-8 text-white" />
+                      </div>
+                      <p className="text-cyber-400 text-sm">Imagem do Produto</p>
+                    </div>
+                  </div>
+
+                  {/* Product Info */}
+                  <div className="space-y-3">
+                    <div>
+                      <h3 className="text-white font-bold text-lg line-clamp-2 mb-1">{product.name}</h3>
+                      <p className="text-cyber-400 text-sm">{product.brand}</p>
+                    </div>
+
+                    {/* Rating */}
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1">
+                        {[...Array(5)].map((_, i) => (
+                          <Star
+                            key={i}
+                            className={`w-4 h-4 ${
+                              i < Math.floor(product.rating)
+                                ? 'text-neon-yellow fill-current'
+                                : 'text-cyber-600'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      <span className="text-cyber-400 text-sm">
+                        {product.rating} ({product.reviewCount})
                       </span>
                     </div>
-                    {coupon.maxUsage && (
-                      <div className="w-full h-1 bg-cyber-700 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-gradient-to-r from-neon-green to-neon-blue transition-all"
-                          style={{ width: `${getUsagePercentage(coupon.usageCount, coupon.maxUsage)}%` }}
-                        />
-                      </div>
-                    )}
-                  </div>
 
-                  <Button
-                    onClick={() => copyToClipboard(coupon.code)}
-                    disabled={!coupon.isActive}
-                    className={`w-full ${
-                      coupon.isActive 
-                        ? 'cyber-button bg-gradient-to-r from-neon-green to-neon-blue text-white' 
-                        : 'bg-cyber-700 text-cyber-500 cursor-not-allowed'
-                    }`}
-                  >
-                    {copiedCode === coupon.code ? (
-                      <>
-                        <Check className="w-4 h-4 mr-2" />
-                        Copiado!
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="w-4 h-4 mr-2" />
-                        Copiar Código
-                      </>
-                    )}
-                  </Button>
+                    {/* Price */}
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-white font-bold text-xl">{formatPrice(product.price)}</span>
+                        <span className="text-cyber-500 text-sm line-through">
+                          {formatPrice(product.originalPrice!)}
+                        </span>
+                      </div>
+                      <div className="text-neon-green text-sm font-medium">
+                        Economize {formatPrice(product.originalPrice! - product.price)}
+                      </div>
+                    </div>
+
+                    {/* Add to Cart */}
+                    <Button
+                      onClick={() => handleAddToCart(product)}
+                      className="w-full cyber-button bg-gradient-to-r from-red-500 to-orange-500 text-white"
+                    >
+                      <ShoppingCart className="w-4 h-4 mr-2" />
+                      Comprar Agora
+                    </Button>
+                  </div>
                 </motion.div>
               ))}
             </div>
-          </div>
+          </section>
 
-          {/* How to Use */}
+          {/* Limited Time Offers */}
+          <section className="mb-12">
+            <div className="flex items-center gap-3 mb-8">
+              <div className="w-12 h-12 bg-gradient-to-br from-neon-blue to-neon-purple rounded-lg flex items-center justify-center">
+                <Tag className="w-6 h-6 text-white" />
+              </div>
+              <h2 className="text-3xl font-bold text-white">Ofertas Limitadas</h2>
+              <Badge className="bg-neon-blue/20 text-neon-blue border-neon-blue/50">
+                <Clock className="w-4 h-4 mr-1" />
+                Tempo Limitado
+              </Badge>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {limitedOffers.map((product, index) => (
+                <motion.div
+                  key={product.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className="bg-dark-800/50 backdrop-blur-sm border border-cyber-500/30 rounded-2xl p-6 hover:border-neon-blue/50 transition-all group"
+                >
+                  {/* Discount Badge */}
+                  <div className="flex justify-between items-start mb-4">
+                    <Badge className="bg-neon-green/20 text-neon-green border-neon-green/50">
+                      -{getDiscountPercentage(product.originalPrice!, product.price)}% OFF
+                    </Badge>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="opacity-0 group-hover:opacity-100 transition-opacity text-cyber-400 hover:text-neon-pink"
+                    >
+                      <Heart className="w-4 h-4" />
+                    </Button>
+                  </div>
+
+                  {/* Product Image */}
+                  <div className="w-full h-48 bg-gradient-to-br from-cyber-800 to-cyber-900 rounded-lg mb-4 flex items-center justify-center">
+                    <div className="text-center">
+                      <div className="w-16 h-16 mx-auto bg-gradient-to-br from-neon-blue to-neon-purple rounded-full flex items-center justify-center mb-2">
+                        <Zap className="w-8 h-8 text-white" />
+                      </div>
+                      <p className="text-cyber-400 text-sm">Imagem do Produto</p>
+                    </div>
+                  </div>
+
+                  {/* Product Info */}
+                  <div className="space-y-3">
+                    <div>
+                      <h3 className="text-white font-bold text-lg line-clamp-2 mb-1">{product.name}</h3>
+                      <p className="text-cyber-400 text-sm">{product.brand}</p>
+                    </div>
+
+                    {/* Rating */}
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1">
+                        {[...Array(5)].map((_, i) => (
+                          <Star
+                            key={i}
+                            className={`w-4 h-4 ${
+                              i < Math.floor(product.rating)
+                                ? 'text-neon-yellow fill-current'
+                                : 'text-cyber-600'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      <span className="text-cyber-400 text-sm">
+                        {product.rating} ({product.reviewCount})
+                      </span>
+                    </div>
+
+                    {/* Price */}
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-white font-bold text-xl">{formatPrice(product.price)}</span>
+                        <span className="text-cyber-500 text-sm line-through">
+                          {formatPrice(product.originalPrice!)}
+                        </span>
+                      </div>
+                      <div className="text-neon-green text-sm font-medium">
+                        Economize {formatPrice(product.originalPrice! - product.price)}
+                      </div>
+                    </div>
+
+                    {/* Add to Cart */}
+                    <Button
+                      onClick={() => handleAddToCart(product)}
+                      className="w-full cyber-button bg-gradient-to-r from-neon-blue to-neon-purple text-white"
+                    >
+                      <ShoppingCart className="w-4 h-4 mr-2" />
+                      Adicionar ao Carrinho
+                    </Button>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </section>
+
+          {/* All Promotional Products */}
+          <section>
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-gradient-to-br from-neon-green to-neon-blue rounded-lg flex items-center justify-center">
+                  <Percent className="w-6 h-6 text-white" />
+                </div>
+                <h2 className="text-3xl font-bold text-white">Todas as Promoções</h2>
+              </div>
+              <Button
+                variant="outline"
+                className="cyber-button border-cyber-500/30 text-cyber-400 hover:text-white"
+              >
+                Ver Todas
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {promotionalProducts.map((product, index) => (
+                <motion.div
+                  key={product.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  className="bg-dark-800/50 backdrop-blur-sm border border-cyber-500/30 rounded-2xl p-6 hover:border-neon-blue/50 transition-all group"
+                >
+                  {/* Discount Badge */}
+                  <div className="flex justify-between items-start mb-4">
+                    <Badge className="bg-neon-green/20 text-neon-green border-neon-green/50">
+                      -{getDiscountPercentage(product.originalPrice!, product.price)}%
+                    </Badge>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="opacity-0 group-hover:opacity-100 transition-opacity text-cyber-400 hover:text-neon-pink"
+                    >
+                      <Heart className="w-4 h-4" />
+                    </Button>
+                  </div>
+
+                  {/* Product Image */}
+                  <div className="w-full h-48 bg-gradient-to-br from-cyber-800 to-cyber-900 rounded-lg mb-4 flex items-center justify-center">
+                    <div className="text-center">
+                      <div className="w-16 h-16 mx-auto bg-gradient-to-br from-neon-blue to-neon-purple rounded-full flex items-center justify-center mb-2">
+                        <Zap className="w-8 h-8 text-white" />
+                      </div>
+                      <p className="text-cyber-400 text-sm">Imagem do Produto</p>
+                    </div>
+                  </div>
+
+                  {/* Product Info */}
+                  <div className="space-y-3">
+                    <div>
+                      <h3 className="text-white font-bold text-lg line-clamp-2 mb-1">{product.name}</h3>
+                      <p className="text-cyber-400 text-sm">{product.brand}</p>
+                    </div>
+
+                    {/* Rating */}
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1">
+                        {[...Array(5)].map((_, i) => (
+                          <Star
+                            key={i}
+                            className={`w-4 h-4 ${
+                              i < Math.floor(product.rating)
+                                ? 'text-neon-yellow fill-current'
+                                : 'text-cyber-600'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      <span className="text-cyber-400 text-sm">
+                        {product.rating} ({product.reviewCount})
+                      </span>
+                    </div>
+
+                    {/* Price */}
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-white font-bold text-xl">{formatPrice(product.price)}</span>
+                        <span className="text-cyber-500 text-sm line-through">
+                          {formatPrice(product.originalPrice!)}
+                        </span>
+                      </div>
+                      <div className="text-neon-green text-sm font-medium">
+                        Economize {formatPrice(product.originalPrice! - product.price)}
+                      </div>
+                    </div>
+
+                    {/* Add to Cart */}
+                    <Button
+                      onClick={() => handleAddToCart(product)}
+                      className="w-full cyber-button bg-gradient-to-r from-neon-blue to-neon-purple text-white"
+                    >
+                      <ShoppingCart className="w-4 h-4 mr-2" />
+                      Adicionar ao Carrinho
+                    </Button>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </section>
+
+          {/* Newsletter Signup */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="bg-dark-800/50 backdrop-blur-sm border border-cyber-500/30 rounded-2xl p-6"
+            transition={{ delay: 0.5 }}
+            className="mt-16 bg-gradient-to-r from-neon-blue/20 to-neon-purple/20 border border-neon-blue/30 rounded-2xl p-8 text-center"
           >
-            <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
-              <Sparkles className="w-6 h-6 text-neon-purple" />
-              Como Usar
-            </h2>
-
-            <div className="grid md:grid-cols-3 gap-6">
-              <div className="text-center">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-neon-blue to-neon-purple flex items-center justify-center">
-                  <span className="text-white font-bold text-xl">1</span>
-                </div>
-                <h3 className="text-white font-bold mb-2">Escolha sua Promoção</h3>
-                <p className="text-cyber-300 text-sm">
-                  Selecione a promoção ou cupom que deseja aproveitar
-                </p>
-              </div>
-
-              <div className="text-center">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-neon-green to-neon-blue flex items-center justify-center">
-                  <span className="text-white font-bold text-xl">2</span>
-                </div>
-                <h3 className="text-white font-bold mb-2">Adicione ao Carrinho</h3>
-                <p className="text-cyber-300 text-sm">
-                  Adicione os produtos que atendem aos critérios da promoção
-                </p>
-              </div>
-
-              <div className="text-center">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-neon-purple to-neon-pink flex items-center justify-center">
-                  <span className="text-white font-bold text-xl">3</span>
-                </div>
-                <h3 className="text-white font-bold mb-2">Aplique o Desconto</h3>
-                <p className="text-cyber-300 text-sm">
-                  Use o código do cupom ou aproveite a promoção automaticamente
-                </p>
-              </div>
+            <div className="w-16 h-16 mx-auto bg-gradient-to-br from-neon-blue to-neon-purple rounded-full flex items-center justify-center mb-4">
+              <Gift className="w-8 h-8 text-white" />
+            </div>
+            <h3 className="text-2xl font-bold text-white mb-2">Não perca nenhuma promoção!</h3>
+            <p className="text-cyber-400 mb-6">
+              Cadastre-se e receba ofertas exclusivas diretamente no seu email
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
+              <input
+                type="email"
+                placeholder="Seu email"
+                className="flex-1 px-4 py-3 bg-dark-700/50 border border-cyber-500/30 rounded-lg text-white placeholder-cyber-500 focus:border-neon-blue focus:outline-none"
+              />
+              <Button className="cyber-button bg-gradient-to-r from-neon-blue to-neon-purple text-white">
+                Cadastrar
+              </Button>
             </div>
           </motion.div>
         </div>
       </div>
-    </>
+    </AppLayout>
   )
 }

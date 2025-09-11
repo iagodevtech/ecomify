@@ -13,22 +13,36 @@ import {
   Zap, 
   ArrowRight,
   AlertCircle,
-  CheckCircle
+  CheckCircle,
+  Phone
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/components/providers'
 import { AppLayout } from '@/components/layout/app-layout'
 
-export default function LoginPage() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+export default function RegisterPage() {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    password: '',
+    confirmPassword: ''
+  })
   const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   
-  const { signIn } = useAuth()
+  const { signUp } = useAuth()
   const router = useRouter()
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData(prev => ({
+      ...prev,
+      [e.target.name]: e.target.value
+    }))
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -36,16 +50,29 @@ export default function LoginPage() {
     setError('')
     setSuccess('')
 
+    // Validation
+    if (formData.password !== formData.confirmPassword) {
+      setError('As senhas não coincidem')
+      setLoading(false)
+      return
+    }
+
+    if (formData.password.length < 6) {
+      setError('A senha deve ter pelo menos 6 caracteres')
+      setLoading(false)
+      return
+    }
+
     try {
-      const { error } = await signIn(email, password)
+      const { error } = await signUp(formData.email, formData.password, formData.name)
       
       if (error) {
         setError(error.message)
       } else {
-        setSuccess('Login realizado com sucesso!')
+        setSuccess('Conta criada com sucesso! Verifique seu email para confirmar.')
         setTimeout(() => {
-          router.push('/dashboard')
-        }, 1000)
+          router.push('/login')
+        }, 2000)
       }
     } catch (err) {
       setError('Erro inesperado. Tente novamente.')
@@ -72,13 +99,13 @@ export default function LoginPage() {
                 Ecomify
               </span>
             </div>
-            <h1 className="text-2xl font-bold text-white mb-2">Bem-vindo de volta!</h1>
+            <h1 className="text-2xl font-bold text-white mb-2">Criar sua conta</h1>
             <p className="text-cyber-400">
-              Entre na sua conta para continuar suas compras
+              Junte-se à revolução tecnológica
             </p>
           </div>
 
-          {/* Login Form */}
+          {/* Register Form */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -86,6 +113,25 @@ export default function LoginPage() {
             className="bg-dark-800/50 backdrop-blur-sm border border-cyber-500/30 rounded-2xl p-8"
           >
             <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Name Field */}
+              <div>
+                <label className="block text-cyber-300 text-sm font-medium mb-2">
+                  Nome Completo
+                </label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-cyber-500" />
+                  <input
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    className="w-full pl-10 pr-4 py-3 bg-dark-700/50 border border-cyber-500/30 rounded-lg text-white placeholder-cyber-500 focus:border-neon-blue focus:outline-none focus:ring-2 focus:ring-neon-blue/20 transition-all"
+                    placeholder="Seu nome completo"
+                    required
+                  />
+                </div>
+              </div>
+
               {/* Email Field */}
               <div>
                 <label className="block text-cyber-300 text-sm font-medium mb-2">
@@ -95,11 +141,30 @@ export default function LoginPage() {
                   <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-cyber-500" />
                   <input
                     type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
                     className="w-full pl-10 pr-4 py-3 bg-dark-700/50 border border-cyber-500/30 rounded-lg text-white placeholder-cyber-500 focus:border-neon-blue focus:outline-none focus:ring-2 focus:ring-neon-blue/20 transition-all"
                     placeholder="seu@email.com"
                     required
+                  />
+                </div>
+              </div>
+
+              {/* Phone Field */}
+              <div>
+                <label className="block text-cyber-300 text-sm font-medium mb-2">
+                  Telefone (opcional)
+                </label>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-cyber-500" />
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    className="w-full pl-10 pr-4 py-3 bg-dark-700/50 border border-cyber-500/30 rounded-lg text-white placeholder-cyber-500 focus:border-neon-blue focus:outline-none focus:ring-2 focus:ring-neon-blue/20 transition-all"
+                    placeholder="(11) 99999-9999"
                   />
                 </div>
               </div>
@@ -113,10 +178,11 @@ export default function LoginPage() {
                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-cyber-500" />
                   <input
                     type={showPassword ? 'text' : 'password'}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
                     className="w-full pl-10 pr-12 py-3 bg-dark-700/50 border border-cyber-500/30 rounded-lg text-white placeholder-cyber-500 focus:border-neon-blue focus:outline-none focus:ring-2 focus:ring-neon-blue/20 transition-all"
-                    placeholder="Sua senha"
+                    placeholder="Mínimo 6 caracteres"
                     required
                   />
                   <button
@@ -125,6 +191,32 @@ export default function LoginPage() {
                     className="absolute right-3 top-1/2 transform -translate-y-1/2 text-cyber-500 hover:text-cyber-300 transition-colors"
                   >
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Confirm Password Field */}
+              <div>
+                <label className="block text-cyber-300 text-sm font-medium mb-2">
+                  Confirmar Senha
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-cyber-500" />
+                  <input
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    className="w-full pl-10 pr-12 py-3 bg-dark-700/50 border border-cyber-500/30 rounded-lg text-white placeholder-cyber-500 focus:border-neon-blue focus:outline-none focus:ring-2 focus:ring-neon-blue/20 transition-all"
+                    placeholder="Confirme sua senha"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-cyber-500 hover:text-cyber-300 transition-colors"
+                  >
+                    {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
                 </div>
               </div>
@@ -152,13 +244,15 @@ export default function LoginPage() {
                 </motion.div>
               )}
 
-              {/* Forgot Password */}
-              <div className="text-right">
-                <Link
-                  href="/forgot-password"
-                  className="text-neon-blue hover:text-neon-purple text-sm font-medium transition-colors"
-                >
-                  Esqueceu sua senha?
+              {/* Terms */}
+              <div className="text-sm text-cyber-400">
+                Ao criar uma conta, você concorda com nossos{' '}
+                <Link href="/terms" className="text-neon-blue hover:text-neon-purple">
+                  Termos de Uso
+                </Link>{' '}
+                e{' '}
+                <Link href="/privacy" className="text-neon-blue hover:text-neon-purple">
+                  Política de Privacidade
                 </Link>
               </div>
 
@@ -171,11 +265,11 @@ export default function LoginPage() {
                 {loading ? (
                   <div className="flex items-center gap-2">
                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Entrando...
+                    Criando conta...
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">
-                    Entrar
+                    Criar Conta
                     <ArrowRight className="w-5 h-5" />
                   </div>
                 )}
@@ -217,7 +311,7 @@ export default function LoginPage() {
             </div>
           </motion.div>
 
-          {/* Sign Up Link */}
+          {/* Login Link */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -225,12 +319,12 @@ export default function LoginPage() {
             className="text-center mt-6"
           >
             <p className="text-cyber-400">
-              Não tem uma conta?{' '}
+              Já tem uma conta?{' '}
               <Link
-                href="/register"
+                href="/login"
                 className="text-neon-blue hover:text-neon-purple font-medium transition-colors"
               >
-                Criar conta
+                Fazer login
               </Link>
             </p>
           </motion.div>
