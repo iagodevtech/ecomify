@@ -19,10 +19,10 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { NotificationBell } from '@/components/notifications/notification-bell'
 import { useAuth } from '@/components/providers'
 import { useCart } from '@/components/providers'
 import { MobileNav } from './mobile-nav'
-import { NotificationCenter } from '@/components/notifications/notification-center'
 import { formatPrice } from '@/lib/utils'
 
 const categories = [
@@ -156,7 +156,7 @@ export function Header() {
             </Button>
 
             {/* Notifications */}
-            <NotificationCenter />
+            <NotificationBell />
 
             {/* Wishlist */}
             <Button
