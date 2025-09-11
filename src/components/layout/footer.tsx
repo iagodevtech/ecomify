@@ -118,11 +118,11 @@ export function Footer() {
               >
                 <div className="flex items-center gap-3 text-cyber-400">
                   <Mail className="w-5 h-5 text-neon-blue" />
-                  <span>contato@ecomify.com</span>
+                  <span>iagodevtech@gmail.com</span>
                 </div>
                 <div className="flex items-center gap-3 text-cyber-400">
                   <Phone className="w-5 h-5 text-neon-green" />
-                  <span>(11) 99999-9999</span>
+                  <span>+55 21 95922-0456</span>
                 </div>
                 <div className="flex items-center gap-3 text-cyber-400">
                   <MapPin className="w-5 h-5 text-neon-purple" />
@@ -232,7 +232,7 @@ export function Footer() {
         >
           <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2 text-cyber-400 text-sm">
-              <span>© 2024 Ecomify. Todos os direitos reservados.</span>
+              <span>© 2024 Ecomify. Desenvolvido por <a href="https://iagodev.online" target="_blank" rel="noopener noreferrer" className="text-neon-blue hover:text-neon-purple transition-colors">Iago Alves</a>. Todos os direitos reservados.</span>
               <span className="hidden sm:inline">•</span>
               <span className="hidden sm:inline">Feito com</span>
               <Heart className="w-4 h-4 text-red-400" />

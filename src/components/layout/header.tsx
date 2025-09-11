@@ -83,6 +83,14 @@ export function Header() {
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center gap-6">
             <motion.a
+              href="/"
+              className="text-cyber-300 hover:text-neon-blue transition-colors font-medium relative group"
+            >
+              Home
+              <div className="absolute -bottom-1 left-0 w-0 h-0.5 bg-neon-blue transition-all group-hover:w-full" />
+            </motion.a>
+            
+            <motion.a
               href="/produtos"
               className="text-cyber-300 hover:text-neon-blue transition-colors font-medium relative group"
             >
@@ -147,9 +155,10 @@ export function Header() {
               variant="ghost"
               size="icon"
               className="relative text-cyber-400 hover:text-neon-pink"
+              onClick={() => window.location.href = '/favoritos'}
             >
               <Heart className="w-5 h-5" />
-              <Badge className="absolute -top-1 -right-1 w-5 h-5 p-0 text-xs bg-neon-pink">
+              <Badge className="absolute -top-1 -right-1 w-5 h-5 p-0 text-xs bg-neon-pink flex items-center justify-center">
                 5
               </Badge>
             </Button>
@@ -159,10 +168,11 @@ export function Header() {
               variant="ghost"
               size="icon"
               className="relative text-cyber-400 hover:text-neon-green"
+              onClick={() => window.location.href = '/carrinho'}
             >
               <ShoppingCart className="w-5 h-5" />
               {itemCount > 0 && (
-                <Badge className="absolute -top-1 -right-1 w-5 h-5 p-0 text-xs bg-neon-green">
+                <Badge className="absolute -top-1 -right-1 w-5 h-5 p-0 text-xs bg-neon-green flex items-center justify-center">
                   {itemCount}
                 </Badge>
               )}
@@ -250,10 +260,17 @@ export function Header() {
                     ) : (
                       <div className="p-4">
                         <div className="space-y-3">
-                          <Button className="w-full cyber-button bg-gradient-to-r from-neon-blue to-neon-purple text-white">
+                          <Button 
+                            className="w-full cyber-button bg-gradient-to-r from-neon-blue to-neon-purple text-white"
+                            onClick={() => window.location.href = '/login'}
+                          >
                             Entrar
                           </Button>
-                          <Button variant="outline" className="w-full border-cyber-500 text-cyber-400 hover:border-neon-blue hover:text-neon-blue">
+                          <Button 
+                            variant="outline" 
+                            className="w-full border-cyber-500 text-cyber-400 hover:border-neon-blue hover:text-neon-blue"
+                            onClick={() => window.location.href = '/register'}
+                          >
                             Criar Conta
                           </Button>
                         </div>
