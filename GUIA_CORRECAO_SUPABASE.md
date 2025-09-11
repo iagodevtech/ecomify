@@ -5,6 +5,7 @@
 1. **Erro de chave duplicada**: `duplicate key value violates unique constraint "categories_name_key"`
 2. **Falta de políticas RLS**: Row Level Security não configurado
 3. **Dados duplicados**: Tentativa de inserir dados que já existem
+4. **Tabelas inexistentes**: `ERROR: 42P01: relation "payments" does not exist`
 
 ## ✅ **SOLUÇÕES IMPLEMENTADAS:**
 
@@ -14,12 +15,12 @@
 - ✅ **Inserção segura** de dados
 
 ### **2. Políticas RLS Configuradas**
-- ✅ **`fix-rls-policies.sql`** - Todas as políticas de segurança
-- ✅ **RLS habilitado** em todas as tabelas
+- ✅ **`fix-rls-policies-corrected.sql`** - Políticas apenas para tabelas existentes
+- ✅ **RLS habilitado** em todas as tabelas que existem
 - ✅ **Políticas específicas** para cada tipo de usuário
 
 ### **3. Script de Verificação**
-- ✅ **`verify-supabase-setup.sql`** - Verifica se tudo está funcionando
+- ✅ **`verify-supabase-setup-corrected.sql`** - Verifica apenas tabelas existentes
 - ✅ **Testa conexões** e políticas
 - ✅ **Mostra estatísticas** do banco
 
@@ -28,7 +29,7 @@
 ### **PASSO 1: Executar Políticas RLS**
 ```sql
 -- No SQL Editor do Supabase, execute:
--- Copie e cole o conteúdo de fix-rls-policies.sql
+-- Copie e cole o conteúdo de fix-rls-policies-corrected.sql
 ```
 
 ### **PASSO 2: Inserir Dados Corrigidos**
@@ -40,7 +41,7 @@
 ### **PASSO 3: Verificar Setup**
 ```sql
 -- No SQL Editor do Supabase, execute:
--- Copie e cole o conteúdo de verify-supabase-setup.sql
+-- Copie e cole o conteúdo de verify-supabase-setup-corrected.sql
 ```
 
 ### **PASSO 4: Testar Conexão Local**
@@ -103,7 +104,15 @@ GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO authenticated;
 ```sql
 -- Temporariamente desabilitar RLS para teste:
 ALTER TABLE categories DISABLE ROW LEVEL SECURITY;
--- (Re-habilitar depois com o script fix-rls-policies.sql)
+-- (Re-habilitar depois com o script fix-rls-policies-corrected.sql)
+```
+
+### **Problema 4: Tabelas Inexistentes**
+```sql
+-- Se aparecer erro "relation does not exist":
+-- 1. Execute primeiro o supabase-schema.sql
+-- 2. Depois execute fix-rls-policies-corrected.sql
+-- 3. Use apenas os scripts "corrected" que têm apenas tabelas existentes
 ```
 
 ## 📞 **SUPORTE:**
