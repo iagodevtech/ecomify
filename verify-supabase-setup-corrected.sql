@@ -4,22 +4,22 @@
 
 -- Verificar se as tabelas existem e status RLS
 SELECT 
-    table_name,
+    c.relname as table_name,
     CASE 
-        WHEN row_security = 'YES' THEN '✅ RLS Habilitado'
+        WHEN c.relrowsecurity = true THEN '✅ RLS Habilitado'
         ELSE '❌ RLS Desabilitado'
     END as rls_status
-FROM information_schema.tables t
-LEFT JOIN pg_class c ON c.relname = t.table_name
-WHERE table_schema = 'public' 
-AND table_type = 'BASE TABLE'
-AND table_name IN (
+FROM pg_class c
+JOIN pg_namespace n ON n.oid = c.relnamespace
+WHERE n.nspname = 'public' 
+AND c.relkind = 'r'
+AND c.relname IN (
     'profiles', 'user_addresses', 'payment_methods', 'categories', 'brands', 
     'products', 'product_variations', 'cart_items', 'orders', 'order_items', 
     'reviews', 'wishlist', 'coupons', 'coupon_usage', 'notifications', 
     'price_alerts', 'product_views', 'analytics_events', 'system_settings', 'audit_logs'
 )
-ORDER BY table_name;
+ORDER BY c.relname;
 
 -- Verificar se as políticas existem
 SELECT 

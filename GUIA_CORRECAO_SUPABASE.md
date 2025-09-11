@@ -41,7 +41,7 @@
 ### **PASSO 3: Verificar Setup**
 ```sql
 -- No SQL Editor do Supabase, execute:
--- Copie e cole o conteúdo de verify-supabase-setup-corrected.sql
+-- Copie e cole o conteúdo de verify-supabase-simple.sql
 ```
 
 ### **PASSO 4: Testar Conexão Local**
@@ -113,6 +113,14 @@ ALTER TABLE categories DISABLE ROW LEVEL SECURITY;
 -- 1. Execute primeiro o supabase-schema.sql
 -- 2. Depois execute fix-rls-policies-corrected.sql
 -- 3. Use apenas os scripts "corrected" que têm apenas tabelas existentes
+```
+
+### **Problema 5: Coluna Inexistente**
+```sql
+-- Se aparecer erro "column does not exist":
+-- Use o script verify-supabase-simple.sql que tem sintaxe correta
+-- Ou execute apenas as consultas que funcionam:
+SELECT tablename FROM pg_tables WHERE schemaname = 'public';
 ```
 
 ## 📞 **SUPORTE:**
