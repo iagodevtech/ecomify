@@ -45,8 +45,8 @@ const footerLinks = {
   ],
   legal: [
     { name: 'Termos de Uso', href: '/termos' },
-    { name: 'Política de Privacidade', href: '/privacidade' },
-    { name: 'Política de Cookies', href: '/cookies' },
+    { name: 'Política de Privacidade', href: '/politica-privacidade' },
+    { name: 'Política de Cookies', href: '/politica-cookies' },
     { name: 'LGPD', href: '/lgpd' },
     { name: 'Código de Conduta', href: '/codigo-conduta' }
   ]

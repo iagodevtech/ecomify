@@ -3,7 +3,6 @@
 import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { 
-  Heart, 
   ShoppingCart, 
   Trash2, 
   ArrowLeft, 
@@ -23,45 +22,6 @@ import { formatPrice } from '@/lib/stripe'
 const mockWishlistItems = [
   {
     id: '1',
-    name: 'MacBook Pro 16" M3 Max',
-    price: 15999,
-    originalPrice: 17999,
-    image: '/images/products/macbook-pro.jpg',
-    brand: 'Apple',
-    rating: 4.9,
-    reviews: 1247,
-    inStock: true,
-    discount: 11,
-    addedDate: '2024-01-15'
-  },
-  {
-    id: '2',
-    name: 'iPhone 15 Pro Max',
-    price: 8999,
-    originalPrice: 9999,
-    image: '/images/products/iphone-15-pro.jpg',
-    brand: 'Apple',
-    rating: 4.8,
-    reviews: 892,
-    inStock: true,
-    discount: 10,
-    addedDate: '2024-01-14'
-  },
-  {
-    id: '3',
-    name: 'Samsung Galaxy S24 Ultra',
-    price: 7999,
-    originalPrice: 7999,
-    image: '/images/products/galaxy-s24.jpg',
-    brand: 'Samsung',
-    rating: 4.7,
-    reviews: 634,
-    inStock: false,
-    discount: 0,
-    addedDate: '2024-01-13'
-  },
-  {
-    id: '4',
     name: 'Dell XPS 15',
     price: 12999,
     originalPrice: 14999,
@@ -72,6 +32,19 @@ const mockWishlistItems = [
     inStock: true,
     discount: 13,
     addedDate: '2024-01-12'
+  },
+  {
+    id: '2',
+    name: 'AirPods Pro 2',
+    price: 2499,
+    originalPrice: 2499,
+    image: '/images/products/airpods-pro.jpg',
+    brand: 'Apple',
+    rating: 4.8,
+    reviews: 892,
+    inStock: true,
+    discount: 0,
+    addedDate: '2024-01-14'
   }
 ]
 
@@ -125,7 +98,7 @@ export default function FavoritosPage() {
             </Button>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-gradient-to-br from-neon-pink to-neon-purple rounded-lg flex items-center justify-center">
-                <Heart className="w-6 h-6 text-white" />
+                <Star className="w-6 h-6 text-white" />
               </div>
               <h1 className="text-3xl md:text-4xl font-bold text-white">
                 Meus Favoritos
@@ -145,7 +118,7 @@ export default function FavoritosPage() {
             className="text-center py-16"
           >
             <div className="w-32 h-32 bg-gradient-to-br from-neon-pink/20 to-neon-purple/20 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Heart className="w-16 h-16 text-neon-pink" />
+              <Star className="w-16 h-16 text-neon-pink" />
             </div>
             <h2 className="text-2xl font-bold text-white mb-4">Sua lista de favoritos está vazia</h2>
             <p className="text-cyber-300 mb-8">Adicione produtos que você ama para não perdê-los!</p>
@@ -200,7 +173,7 @@ export default function FavoritosPage() {
                 >
                   {/* Product Image */}
                   <div className="relative h-48 bg-gradient-to-br from-neon-blue/20 to-neon-purple/20 flex items-center justify-center">
-                    <Heart className="w-16 h-16 text-neon-pink" />
+                    <Star className="w-16 h-16 text-neon-pink" />
                     {item.discount > 0 && (
                       <Badge className="absolute top-3 left-3 bg-neon-green/20 text-neon-green border-neon-green/30">
                         -{item.discount}%
