@@ -33,6 +33,7 @@
     },
     "plugins": [
       "expo-notifications",
+      "expo-local-authentication",
       [
         "expo-build-properties",
         {
@@ -45,6 +46,12 @@
         }
       ]
     ],
+    "notification": {
+      "icon": "./assets/notification-icon.png",
+      "color": "#00f5ff",
+      "androidMode": "default",
+      "androidCollapsedTitle": "Ecomify"
+    },
     "extra": {
       "eas": {
         "projectId": "your-project-id-here"

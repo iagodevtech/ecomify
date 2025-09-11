@@ -9,6 +9,8 @@ import { AppNavigator } from './src/navigation/AppNavigator';
 import { AuthProvider } from './src/providers/AuthProvider';
 import { ThemeProvider } from './src/providers/ThemeProvider';
 import { CartProvider } from './src/providers/CartProvider';
+import { NotificationProvider } from './src/providers/NotificationProvider';
+import { SyncProvider } from './src/providers/SyncProvider';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -29,12 +31,16 @@ export default function App() {
         <QueryClientProvider client={queryClient}>
           <ThemeProvider>
             <AuthProvider>
-              <CartProvider>
-                <NavigationContainer>
-                  <AppNavigator />
-                  <StatusBar style="light" backgroundColor="#0a0a0a" />
-                </NavigationContainer>
-              </CartProvider>
+              <SyncProvider>
+                <CartProvider>
+                  <NotificationProvider>
+                    <NavigationContainer>
+                      <AppNavigator />
+                      <StatusBar style="light" backgroundColor="#0a0a0a" />
+                    </NavigationContainer>
+                  </NotificationProvider>
+                </CartProvider>
+              </SyncProvider>
             </AuthProvider>
           </ThemeProvider>
         </QueryClientProvider>

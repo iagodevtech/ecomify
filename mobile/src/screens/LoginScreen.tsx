@@ -14,6 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../providers/AuthProvider';
 import { useTheme } from '../providers/ThemeProvider';
+import { useNotifications } from '../providers/NotificationProvider';
 
 export function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -24,6 +25,7 @@ export function LoginScreen() {
   const navigation = useNavigation();
   const { signIn, signInWithGoogle, signInWithFacebook, signInWithApple } = useAuth();
   const { colors } = useTheme();
+  const { biometricEnabled, authenticateWithBiometric } = useNotifications();
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -65,6 +67,24 @@ export function LoginScreen() {
       }
     } catch (error) {
       Alert.alert('Erro', 'Ocorreu um erro inesperado');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleBiometricLogin = async () => {
+    setLoading(true);
+    try {
+      const success = await authenticateWithBiometric('Use sua biometria para fazer login');
+      if (success) {
+        // Here you would typically retrieve saved credentials and login
+        // For now, we'll just show a success message
+        Alert.alert('Sucesso', 'Login biométrico realizado com sucesso!');
+      } else {
+        Alert.alert('Falha', 'Autenticação biométrica falhou');
+      }
+    } catch (error) {
+      Alert.alert('Erro', 'Ocorreu um erro na autenticação biométrica');
     } finally {
       setLoading(false);
     }
@@ -179,6 +199,25 @@ export function LoginScreen() {
       fontWeight: '600',
       color: colors.text,
     },
+    biometricContainer: {
+      marginBottom: 20,
+    },
+    biometricButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 2,
+      borderColor: colors.primary,
+      borderRadius: 12,
+      padding: 16,
+      backgroundColor: colors.primary + '10',
+    },
+    biometricButtonText: {
+      marginLeft: 12,
+      fontSize: 16,
+      fontWeight: '600',
+      color: colors.primary,
+    },
     footer: {
       alignItems: 'center',
     },
@@ -257,6 +296,19 @@ export function LoginScreen() {
             </Text>
           </TouchableOpacity>
         </View>
+
+        {biometricEnabled && (
+          <View style={styles.biometricContainer}>
+            <TouchableOpacity
+              style={styles.biometricButton}
+              onPress={handleBiometricLogin}
+              disabled={loading}
+            >
+              <Ionicons name="finger-print" size={32} color={colors.primary} />
+              <Text style={styles.biometricButtonText}>Login com Biometria</Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
         <View style={styles.socialContainer}>
           <Text style={styles.socialTitle}>Ou continue com</Text>
