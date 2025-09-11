@@ -1,0 +1,33 @@
+'use client'
+
+import { usePathname } from 'next/navigation'
+import { Header } from './header'
+import { BottomNav } from './bottom-nav'
+
+interface AppLayoutProps {
+  children: React.ReactNode
+}
+
+export function AppLayout({ children }: AppLayoutProps) {
+  const pathname = usePathname()
+
+  // Pages that should not show bottom navigation
+  const hideBottomNav = [
+    '/checkout',
+    '/login',
+    '/register',
+    '/admin'
+  ]
+
+  const shouldShowBottomNav = !hideBottomNav.some(path => pathname.startsWith(path))
+
+  return (
+    <>
+      <Header />
+      <main className={`min-h-screen ${shouldShowBottomNav ? 'pb-20' : ''}`}>
+        {children}
+      </main>
+      {shouldShowBottomNav && <BottomNav currentPath={pathname} />}
+    </>
+  )
+}

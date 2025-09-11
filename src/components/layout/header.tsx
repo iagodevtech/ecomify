@@ -21,6 +21,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { useAuth } from '@/components/providers'
 import { useCart } from '@/components/providers'
+import { MobileNav } from './mobile-nav'
 import { formatPrice } from '@/lib/utils'
 
 const categories = [
@@ -286,29 +287,8 @@ export function Header() {
           )}
         </AnimatePresence>
 
-        {/* Mobile Menu */}
-        <AnimatePresence>
-          {isMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="lg:hidden bg-dark-800/95 backdrop-blur-md border-t border-cyber-500/30"
-            >
-              <div className="py-4 space-y-2">
-                {categories.map((category) => (
-                  <a
-                    key={category.name}
-                    href={category.href}
-                    className="block px-4 py-3 text-cyber-300 hover:text-neon-blue hover:bg-cyber-800/50 transition-all"
-                  >
-                    {category.name}
-                  </a>
-                ))}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* Mobile Navigation */}
+        <MobileNav isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
       </div>
     </header>
   )

@@ -1,7 +1,7 @@
 'use client'
 
 import { Suspense } from 'react'
-import { Header } from '@/components/layout/header'
+import { AppLayout } from '@/components/layout/app-layout'
 import { HeroSection } from '@/components/sections/hero-section'
 import { FeaturedProducts } from '@/components/sections/featured-products'
 import { CategoriesSection } from '@/components/sections/categories-section'
@@ -13,9 +13,8 @@ import { LoadingSpinner } from '@/components/ui/loading-spinner'
 
 export default function HomePage() {
   return (
-    <>
-      <Header />
-      <main className="min-h-screen pt-16 lg:pt-20">
+    <AppLayout>
+      <div className="pt-16 lg:pt-20">
         <Suspense fallback={<LoadingSpinner />}>
           <HeroSection />
           <StatsSection />
@@ -25,7 +24,7 @@ export default function HomePage() {
           <TestimonialsSection />
           <NewsletterSection />
         </Suspense>
-      </main>
-    </>
+      </div>
+    </AppLayout>
   )
 }

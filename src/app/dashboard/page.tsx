@@ -33,7 +33,7 @@ import {
   Laptop,
   Headphones
 } from 'lucide-react'
-import { Header } from '@/components/layout/header'
+import { AppLayout } from '@/components/layout/app-layout'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { formatPrice } from '@/lib/utils'
@@ -163,8 +163,7 @@ export default function DashboardPage() {
   ]
 
   return (
-    <>
-      <Header />
+    <AppLayout>
       <div className="min-h-screen bg-dark-900 pt-16 lg:pt-20">
         <div className="container mx-auto px-4 py-8">
           {/* Header */}
@@ -645,6 +644,6 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
-    </>
+    </AppLayout>
   )
 }
