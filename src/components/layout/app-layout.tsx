@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import { Header } from './header'
 import { BottomNav } from './bottom-nav'
 import { Footer } from './footer'
+import { ChatWidget } from '@/components/chat/chat-widget'
 
 interface AppLayoutProps {
   children: React.ReactNode
@@ -40,6 +41,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       </main>
       {shouldShowFooter && <Footer />}
       {shouldShowBottomNav && <BottomNav currentPath={pathname} />}
+      <ChatWidget />
     </>
   )
 }

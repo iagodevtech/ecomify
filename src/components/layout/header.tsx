@@ -22,6 +22,7 @@ import { Badge } from '@/components/ui/badge'
 import { useAuth } from '@/components/providers'
 import { useCart } from '@/components/providers'
 import { MobileNav } from './mobile-nav'
+import { NotificationCenter } from '@/components/notifications/notification-center'
 import { formatPrice } from '@/lib/utils'
 
 const categories = [
@@ -149,6 +150,9 @@ export function Header() {
                 3
               </Badge>
             </Button>
+
+            {/* Notifications */}
+            <NotificationCenter />
 
             {/* Wishlist */}
             <Button
