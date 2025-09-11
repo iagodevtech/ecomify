@@ -37,6 +37,9 @@ import { AppLayout } from '@/components/layout/app-layout'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { formatPrice } from '@/lib/utils'
+import { AdvancedAnalytics } from '@/components/analytics/advanced-analytics'
+import { SmartNotifications } from '@/components/notifications/smart-notifications'
+import { AdvancedSettings } from '@/components/settings/advanced-settings'
 
 // Mock data - in real app this would come from API
 const userStats = {
@@ -159,7 +162,9 @@ export default function DashboardPage() {
     { id: 'orders', name: 'Pedidos', icon: Package },
     { id: 'wishlist', name: 'Favoritos', icon: Heart },
     { id: 'alerts', name: 'Alertas', icon: Bell },
-    { id: 'analytics', name: 'Analytics', icon: Activity }
+    { id: 'analytics', name: 'Analytics', icon: Activity },
+    { id: 'notifications', name: 'Notificações', icon: Bell },
+    { id: 'settings', name: 'Configurações', icon: Settings }
   ]
 
   return (
@@ -563,82 +568,17 @@ export default function DashboardPage() {
 
               {/* Analytics Tab */}
               {activeTab === 'analytics' && (
-                <div className="space-y-8">
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="bg-dark-800/50 backdrop-blur-sm border border-cyber-500/30 rounded-2xl p-6"
-                  >
-                    <h2 className="text-xl font-bold text-white mb-6">Análise de Comportamento</h2>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      <div className="text-center">
-                        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-neon-blue to-neon-purple flex items-center justify-center">
-                          <Eye className="w-8 h-8 text-white" />
-                        </div>
-                        <h3 className="text-2xl font-bold text-white mb-1">1,247</h3>
-                        <p className="text-cyber-400 text-sm">Produtos Visualizados</p>
-                      </div>
-                      
-                      <div className="text-center">
-                        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-neon-green to-neon-blue flex items-center justify-center">
-                          <Clock className="w-8 h-8 text-white" />
-                        </div>
-                        <h3 className="text-2xl font-bold text-white mb-1">2h 34m</h3>
-                        <p className="text-cyber-400 text-sm">Tempo Médio na Sessão</p>
-                      </div>
-                      
-                      <div className="text-center">
-                        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-neon-purple to-neon-pink flex items-center justify-center">
-                          <Target className="w-8 h-8 text-white" />
-                        </div>
-                        <h3 className="text-2xl font-bold text-white mb-1">87%</h3>
-                        <p className="text-cyber-400 text-sm">Taxa de Conversão</p>
-                      </div>
-                    </div>
-                  </motion.div>
+                <AdvancedAnalytics />
+              )}
 
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                    className="bg-dark-800/50 backdrop-blur-sm border border-cyber-500/30 rounded-2xl p-6"
-                  >
-                    <h2 className="text-xl font-bold text-white mb-6">Recomendações Personalizadas</h2>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="p-4 bg-dark-700/30 rounded-lg border border-cyber-500/20">
-                        <div className="flex items-center gap-3 mb-3">
-                          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-neon-blue to-neon-purple flex items-center justify-center">
-                            <Award className="w-5 h-5 text-white" />
-                          </div>
-                          <div>
-                            <h3 className="text-white font-bold">Cliente VIP</h3>
-                            <p className="text-cyber-400 text-sm">Você é um dos nossos melhores clientes</p>
-                          </div>
-                        </div>
-                        <p className="text-cyber-300 text-sm">
-                          Com base no seu histórico de compras, você tem acesso a ofertas exclusivas e frete grátis em todos os pedidos.
-                        </p>
-                      </div>
-                      
-                      <div className="p-4 bg-dark-700/30 rounded-lg border border-cyber-500/20">
-                        <div className="flex items-center gap-3 mb-3">
-                          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-neon-green to-neon-blue flex items-center justify-center">
-                            <Gift className="w-5 h-5 text-white" />
-                          </div>
-                          <div>
-                            <h3 className="text-white font-bold">Cashback Disponível</h3>
-                            <p className="text-cyber-400 text-sm">R$ 450,00 em cashback</p>
-                          </div>
-                        </div>
-                        <p className="text-cyber-300 text-sm">
-                          Use seu cashback acumulado na próxima compra ou resgate em dinheiro.
-                        </p>
-                      </div>
-                    </div>
-                  </motion.div>
-                </div>
+              {/* Notifications Tab */}
+              {activeTab === 'notifications' && (
+                <SmartNotifications />
+              )}
+
+              {/* Settings Tab */}
+              {activeTab === 'settings' && (
+                <AdvancedSettings />
               )}
             </div>
           </div>
