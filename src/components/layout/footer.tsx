@@ -62,12 +62,13 @@ const socialLinks = [
 ]
 
 const paymentMethods = [
-  { name: 'PIX', icon: '💳' },
-  { name: 'Visa', icon: '💳' },
-  { name: 'Mastercard', icon: '💳' },
-  { name: 'Elo', icon: '💳' },
-  { name: 'PayPal', icon: '💳' },
-  { name: 'Boleto', icon: '📄' }
+  { name: 'PIX', icon: '⚡', description: 'Pagamento instantâneo' },
+  { name: 'Visa', icon: '💳', description: 'Cartão de crédito' },
+  { name: 'Mastercard', icon: '💳', description: 'Cartão de crédito' },
+  { name: 'Elo', icon: '💳', description: 'Cartão de crédito' },
+  { name: 'PayPal', icon: '🅿️', description: 'Pagamento online' },
+  { name: 'Boleto', icon: '📄', description: 'Boleto bancário' },
+  { name: 'Depósito', icon: '🏦', description: 'Transferência bancária' }
 ]
 
 const certifications = [
@@ -200,9 +201,11 @@ export function Footer() {
                 {paymentMethods.map((method, index) => (
                   <div
                     key={index}
-                    className="w-12 h-8 bg-cyber-800 rounded flex items-center justify-center text-lg"
+                    className="flex items-center gap-2 bg-cyber-800/50 px-3 py-2 rounded-lg border border-cyber-500/30"
+                    title={method.description}
                   >
-                    {method.icon}
+                    <span className="text-lg">{method.icon}</span>
+                    <span className="text-sm text-cyber-300">{method.name}</span>
                   </div>
                 ))}
               </div>

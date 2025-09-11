@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import { ChevronRight, Play, Star, Zap, Shield, Globe } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { SearchBar } from '@/components/search/search-bar'
 
 export function HeroSection() {
   const [currentSlide, setCurrentSlide] = useState(0)
@@ -137,6 +138,25 @@ export function HeroSection() {
                   <span className="text-sm text-cyber-300">{feature}</span>
                 </div>
               ))}
+            </motion.div>
+
+            {/* Search Bar */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.7 }}
+              className="mt-8"
+            >
+              <SearchBar 
+                onSearch={(query) => {
+                  console.log('Search query:', query)
+                  // Implementar busca
+                }}
+                onFilter={(filters) => {
+                  console.log('Filters:', filters)
+                  // Implementar filtros
+                }}
+              />
             </motion.div>
 
             {/* CTA Buttons */}

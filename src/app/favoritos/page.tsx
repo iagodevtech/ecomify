@@ -3,14 +3,15 @@
 import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { 
-  ShoppingCart, 
+  Heart, 
   Trash2, 
   ArrowLeft, 
   Zap,
   Star,
   Eye,
   Share2,
-  AlertCircle
+  AlertCircle,
+  ShoppingCart
 } from 'lucide-react'
 import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'
