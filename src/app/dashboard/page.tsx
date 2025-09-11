@@ -20,6 +20,7 @@ import { Footer } from '@/components/layout/footer'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ProtectedRoute } from '@/components/auth/protected-route'
+import { RecommendationSection } from '@/components/recommendations/recommendation-section'
 import { useAuth } from '@/components/providers'
 
 export default function DashboardPage() {
@@ -263,6 +264,17 @@ export default function DashboardPage() {
             </motion.div>
           </div>
         </div>
+
+        {/* Recommendations Section */}
+        <section className="py-16">
+          <div className="container mx-auto px-4">
+            <RecommendationSection 
+              title="Recomendados para Você"
+              type="user"
+              limit={8}
+            />
+          </div>
+        </section>
 
         <Footer />
       </div>
