@@ -25,8 +25,8 @@ export async function POST(request: NextRequest) {
         total: amount.toFixed(2)
       },
       redirect_urls: {
-        return_url: `${process.env.NEXT_PUBLIC_SITE_URL}/payment/success?orderId=${orderId}`,
-        cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/payment/cancel?orderId=${orderId}`
+        return_url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://iagodevtech.github.io/ecomify'}/payment/success?orderId=${orderId}`,
+        cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://iagodevtech.github.io/ecomify'}/payment/cancel?orderId=${orderId}`
       }
     }
 

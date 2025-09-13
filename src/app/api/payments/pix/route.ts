@@ -1,8 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { getSupabaseClient, isSupabaseAvailable } from '@/lib/supabase'
 
 export async function POST(request: NextRequest) {
   try {
+    // Check if Supabase is configured
+    if (!isSupabaseAvailable()) {
+      return NextResponse.json(
+        { error: 'Supabase não está configurado' },
+        { status: 503 }
+      )
+    }
+
     const { orderId, amount, currency } = await request.json()
 
     if (!orderId || !amount) {
@@ -16,6 +24,14 @@ export async function POST(request: NextRequest) {
     const pixKey = 'ecomify@pix.com' // This would be your actual PIX key
     const pixCode = generatePixCode(pixKey, amount, orderId)
     const qrCode = await generateQRCode(pixCode)
+
+    const supabase = getSupabaseClient()
+    if (!supabase) {
+      return NextResponse.json(
+        { error: 'Supabase não disponível' },
+        { status: 503 }
+      )
+    }
 
     // Update order with PIX data
     const { error: updateError } = await supabase

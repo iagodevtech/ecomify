@@ -1,8 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { getSupabaseClient, isSupabaseAvailable } from '@/lib/supabase'
 
 export async function POST(request: NextRequest) {
   try {
+    // Check if Supabase is configured
+    if (!isSupabaseAvailable()) {
+      return NextResponse.json(
+        { error: 'Supabase não está configurado' },
+        { status: 503 }
+      )
+    }
+
     const {
       user_id,
       items,
@@ -22,6 +30,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: 'Campos obrigatórios não fornecidos' },
         { status: 400 }
+      )
+    }
+
+    const supabase = getSupabaseClient()
+    if (!supabase) {
+      return NextResponse.json(
+        { error: 'Supabase não disponível' },
+        { status: 503 }
       )
     }
 
