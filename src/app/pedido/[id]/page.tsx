@@ -1,6 +1,21 @@
-'use client'
+import React from 'react'
+import { OrderPageClient } from './order-page-client'
 
-import React, { useState, useEffect } from 'react'
+// Generate static params for static export
+export async function generateStaticParams() {
+  // Return a list of order IDs to pre-generate
+  return [
+    { id: '1' },
+    { id: '2' },
+    { id: '3' },
+    { id: '4' },
+    { id: '5' }
+  ]
+}
+
+export default function OrderPage() {
+  return <OrderPageClient />
+}
 import { motion } from 'framer-motion'
 import { useParams } from 'next/navigation'
 import { 
