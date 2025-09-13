@@ -3,10 +3,16 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-// Only create client if environment variables are properly configured
-export const supabase = supabaseUrl && supabaseAnonKey && 
+// Check if environment variables are properly configured
+const isSupabaseConfigured = supabaseUrl && 
+  supabaseAnonKey && 
   supabaseUrl !== 'SUA_URL_DO_SUPABASE_AQUI' && 
-  supabaseAnonKey !== 'SUA_CHAVE_ANONIMA_AQUI'
+  supabaseAnonKey !== 'SUA_CHAVE_ANONIMA_AQUI' &&
+  supabaseUrl.startsWith('https://') &&
+  supabaseAnonKey.startsWith('eyJ')
+
+// Only create client if environment variables are properly configured
+export const supabase = isSupabaseConfigured
   ? createClient(supabaseUrl, supabaseAnonKey, {
       auth: {
         autoRefreshToken: true,
@@ -15,6 +21,18 @@ export const supabase = supabaseUrl && supabaseAnonKey &&
       }
     })
   : null
+
+// Helper function to check if Supabase is available
+export const isSupabaseAvailable = () => !!supabase
+
+// Helper function to get Supabase client with error handling
+export const getSupabaseClient = () => {
+  if (!supabase) {
+    console.warn('Supabase não está configurado. Verifique as variáveis de ambiente.')
+    return null
+  }
+  return supabase
+}
 
 // Database types
 export interface Database {

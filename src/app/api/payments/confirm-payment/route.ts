@@ -1,14 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { stripe } from '@/lib/stripe'
+import { getStripeClient, isStripeAvailable } from '@/lib/stripe'
 
 export async function POST(request: NextRequest) {
   try {
+    // Check if Stripe is configured
+    if (!isStripeAvailable()) {
+      return NextResponse.json(
+        { error: 'Stripe não está configurado' },
+        { status: 503 }
+      )
+    }
+
     const { payment_intent_id } = await request.json()
 
     if (!payment_intent_id) {
       return NextResponse.json(
         { error: 'ID do pagamento é obrigatório' },
         { status: 400 }
+      )
+    }
+
+    const stripe = getStripeClient()
+    if (!stripe) {
+      return NextResponse.json(
+        { error: 'Stripe não disponível' },
+        { status: 503 }
       )
     }
 

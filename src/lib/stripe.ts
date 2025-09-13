@@ -1,13 +1,35 @@
 import { loadStripe } from '@stripe/stripe-js'
 import Stripe from 'stripe'
 
+// Check if Stripe is configured
+const isStripeConfigured = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY && 
+  process.env.STRIPE_SECRET_KEY &&
+  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY.startsWith('pk_') &&
+  process.env.STRIPE_SECRET_KEY.startsWith('sk_')
+
 // Client-side Stripe
-export const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
+export const stripePromise = isStripeConfigured 
+  ? loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
+  : null
 
 // Server-side Stripe
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2023-10-16',
-})
+export const stripe = isStripeConfigured
+  ? new Stripe(process.env.STRIPE_SECRET_KEY!, {
+      apiVersion: '2023-10-16',
+    })
+  : null
+
+// Helper function to check if Stripe is available
+export const isStripeAvailable = () => !!stripe
+
+// Helper function to get Stripe client with error handling
+export const getStripeClient = () => {
+  if (!stripe) {
+    console.warn('Stripe não está configurado. Verifique as variáveis de ambiente.')
+    return null
+  }
+  return stripe
+}
 
 // Payment methods configuration
 export const paymentMethods = {
