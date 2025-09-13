@@ -52,9 +52,33 @@ export function ReviewProvider({ children }: { children: React.ReactNode }) {
       setLoading(true)
       const now = new Date().toISOString()
 
-      const { data, error } = await supabase
-        .from('reviews')
-        .insert({
+      let reviewData: Review
+      
+      if (supabase) {
+        const { data, error } = await supabase
+          .from('reviews')
+          .insert({
+            user_id: user.id,
+            product_id: productId,
+            rating,
+            title,
+            comment,
+            helpful_count: 0,
+            created_at: now,
+            updated_at: now
+          })
+          .select(`
+            *,
+            user:profiles(name, avatar_url)
+          `)
+          .single()
+
+        if (error) throw error
+        reviewData = data
+      } else {
+        // Create local review object
+        reviewData = {
+          id: `review-${Date.now()}`,
           user_id: user.id,
           product_id: productId,
           rating,
@@ -62,17 +86,15 @@ export function ReviewProvider({ children }: { children: React.ReactNode }) {
           comment,
           helpful_count: 0,
           created_at: now,
-          updated_at: now
-        })
-        .select(`
-          *,
-          user:profiles(name, avatar_url)
-        `)
-        .single()
+          updated_at: now,
+          user: {
+            name: user.user_metadata?.name || user.email?.split('@')[0] || 'Usuário',
+            avatar_url: user.user_metadata?.avatar_url
+          }
+        }
+      }
 
-      if (error) throw error
-
-      setReviews(prev => [data, ...prev])
+      setReviews(prev => [reviewData, ...prev])
       return { success: true }
     } catch (error) {
       console.error('Error creating review:', error)
@@ -92,26 +114,36 @@ export function ReviewProvider({ children }: { children: React.ReactNode }) {
       setLoading(true)
       const now = new Date().toISOString()
 
-      const { data, error } = await supabase
-        .from('reviews')
-        .update({
-          rating,
-          title,
-          comment,
-          updated_at: now
-        })
-        .eq('id', reviewId)
-        .select(`
-          *,
-          user:profiles(name, avatar_url)
-        `)
-        .single()
+      if (supabase) {
+        const { data, error } = await supabase
+          .from('reviews')
+          .update({
+            rating,
+            title,
+            comment,
+            updated_at: now
+          })
+          .eq('id', reviewId)
+          .select(`
+            *,
+            user:profiles(name, avatar_url)
+          `)
+          .single()
 
-      if (error) throw error
+        if (error) throw error
 
-      setReviews(prev => prev.map(review => 
-        review.id === reviewId ? data : review
-      ))
+        setReviews(prev => prev.map(review => 
+          review.id === reviewId ? data : review
+        ))
+      } else {
+        // Update local state
+        setReviews(prev => prev.map(review => 
+          review.id === reviewId 
+            ? { ...review, rating, title, comment, updated_at: now }
+            : review
+        ))
+      }
+      
       return { success: true }
     } catch (error) {
       console.error('Error updating review:', error)
@@ -124,12 +156,15 @@ export function ReviewProvider({ children }: { children: React.ReactNode }) {
   const deleteReview = async (reviewId: string): Promise<{ success: boolean; error?: string }> => {
     try {
       setLoading(true)
-      const { error } = await supabase
-        .from('reviews')
-        .delete()
-        .eq('id', reviewId)
+      
+      if (supabase) {
+        const { error } = await supabase
+          .from('reviews')
+          .delete()
+          .eq('id', reviewId)
 
-      if (error) throw error
+        if (error) throw error
+      }
 
       setReviews(prev => prev.filter(review => review.id !== reviewId))
       return { success: true }
@@ -144,16 +179,19 @@ export function ReviewProvider({ children }: { children: React.ReactNode }) {
   const markHelpful = async (reviewId: string): Promise<{ success: boolean; error?: string }> => {
     try {
       setLoading(true)
-      const { data, error } = await supabase
-        .from('reviews')
-        .update({
-          helpful_count: supabase.raw('helpful_count + 1')
-        })
-        .eq('id', reviewId)
-        .select()
-        .single()
+      
+      if (supabase) {
+        const { data, error } = await supabase
+          .from('reviews')
+          .update({
+            helpful_count: supabase.raw('helpful_count + 1')
+          })
+          .eq('id', reviewId)
+          .select()
+          .single()
 
-      if (error) throw error
+        if (error) throw error
+      }
 
       setReviews(prev => prev.map(review => 
         review.id === reviewId ? { ...review, helpful_count: review.helpful_count + 1 } : review
@@ -169,18 +207,23 @@ export function ReviewProvider({ children }: { children: React.ReactNode }) {
 
   const getProductReviews = async (productId: string): Promise<Review[]> => {
     try {
-      const { data, error } = await supabase
-        .from('reviews')
-        .select(`
-          *,
-          user:profiles(name, avatar_url)
-        `)
-        .eq('product_id', productId)
-        .order('created_at', { ascending: false })
+      if (supabase) {
+        const { data, error } = await supabase
+          .from('reviews')
+          .select(`
+            *,
+            user:profiles(name, avatar_url)
+          `)
+          .eq('product_id', productId)
+          .order('created_at', { ascending: false })
 
-      if (error) throw error
+        if (error) throw error
 
-      return data || []
+        return data || []
+      }
+      
+      // Fallback to local state
+      return reviews.filter(review => review.product_id === productId)
     } catch (error) {
       console.error('Error getting product reviews:', error)
       return []
@@ -191,19 +234,26 @@ export function ReviewProvider({ children }: { children: React.ReactNode }) {
     if (!user) return null
 
     try {
-      const { data, error } = await supabase
-        .from('reviews')
-        .select(`
-          *,
-          user:profiles(name, avatar_url)
-        `)
-        .eq('product_id', productId)
-        .eq('user_id', user.id)
-        .single()
+      if (supabase) {
+        const { data, error } = await supabase
+          .from('reviews')
+          .select(`
+            *,
+            user:profiles(name, avatar_url)
+          `)
+          .eq('product_id', productId)
+          .eq('user_id', user.id)
+          .single()
 
-      if (error && error.code !== 'PGRST116') throw error
+        if (error && error.code !== 'PGRST116') throw error
 
-      return data || null
+        return data || null
+      }
+      
+      // Fallback to local state
+      return reviews.find(review => 
+        review.product_id === productId && review.user_id === user.id
+      ) || null
     } catch (error) {
       console.error('Error getting user review:', error)
       return null

@@ -46,7 +46,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
   }, [user])
 
   const loadWishlistFromDatabase = async () => {
-    if (!user) return
+    if (!user || !supabase) return
 
     try {
       setLoading(true)
@@ -103,14 +103,17 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
 
     try {
       setLoading(true)
-      const { error } = await supabase
-        .from('wishlist')
-        .insert({
-          user_id: user.id,
-          product_id: product.product_id
-        })
+      
+      if (supabase) {
+        const { error } = await supabase
+          .from('wishlist')
+          .insert({
+            user_id: user.id,
+            product_id: product.product_id
+          })
 
-      if (error) throw error
+        if (error) throw error
+      }
 
       // Add to local state
       const newItem: WishlistItem = {
@@ -136,13 +139,16 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
 
     try {
       setLoading(true)
-      const { error } = await supabase
-        .from('wishlist')
-        .delete()
-        .eq('user_id', user.id)
-        .eq('product_id', productId)
+      
+      if (supabase) {
+        const { error } = await supabase
+          .from('wishlist')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('product_id', productId)
 
-      if (error) throw error
+        if (error) throw error
+      }
 
       // Remove from local state
       setItems(prev => prev.filter(item => item.product_id !== productId))
@@ -165,12 +171,15 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
 
     try {
       setLoading(true)
-      const { error } = await supabase
-        .from('wishlist')
-        .delete()
-        .eq('user_id', user.id)
+      
+      if (supabase) {
+        const { error } = await supabase
+          .from('wishlist')
+          .delete()
+          .eq('user_id', user.id)
 
-      if (error) throw error
+        if (error) throw error
+      }
 
       setItems([])
     } catch (error) {

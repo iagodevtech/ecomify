@@ -93,55 +93,76 @@ export function OrderProvider({ children }: { children: React.ReactNode }) {
       const orderNumber = generateOrderNumber()
       const now = new Date().toISOString()
 
-      // Create order in database
-      const { data: order, error } = await supabase
-        .from('orders')
-        .insert({
-          order_number: orderNumber,
-          user_id: user.id,
-          status: orderData.status,
-          payment_status: orderData.payment_status,
-          payment_method: orderData.payment_method,
-          subtotal: orderData.subtotal,
-          shipping: orderData.shipping,
-          discount: orderData.discount,
-          total: orderData.total,
-          shipping_address: orderData.shipping_address,
-          billing_address: orderData.billing_address,
-          notes: orderData.notes,
-          created_at: now,
-          updated_at: now
-        })
-        .select()
-        .single()
+      let orderId = `order-${Date.now()}`
+      
+      if (supabase) {
+        // Create order in database
+        const { data: order, error } = await supabase
+          .from('orders')
+          .insert({
+            order_number: orderNumber,
+            user_id: user.id,
+            status: orderData.status,
+            payment_status: orderData.payment_status,
+            payment_method: orderData.payment_method,
+            subtotal: orderData.subtotal,
+            shipping: orderData.shipping,
+            discount: orderData.discount,
+            total: orderData.total,
+            shipping_address: orderData.shipping_address,
+            billing_address: orderData.billing_address,
+            notes: orderData.notes,
+            created_at: now,
+            updated_at: now
+          })
+          .select()
+          .single()
 
-      if (error) throw error
+        if (error) throw error
+        orderId = order.id
 
-      // Create order items
-      const orderItems = orderData.items.map(item => ({
-        order_id: order.id,
-        product_id: item.product_id,
-        name: item.name,
-        price: item.price,
-        quantity: item.quantity,
-        image: item.image,
-        brand: item.brand
-      }))
+        // Create order items
+        const orderItems = orderData.items.map(item => ({
+          order_id: order.id,
+          product_id: item.product_id,
+          name: item.name,
+          price: item.price,
+          quantity: item.quantity,
+          image: item.image,
+          brand: item.brand
+        }))
 
-      const { error: itemsError } = await supabase
-        .from('order_items')
-        .insert(orderItems)
+        const { error: itemsError } = await supabase
+          .from('order_items')
+          .insert(orderItems)
 
-      if (itemsError) throw itemsError
-
-      // Get complete order with items
-      const completeOrder = await getOrder(order.id)
-      if (completeOrder) {
-        setOrders(prev => [completeOrder, ...prev])
-        setCurrentOrder(completeOrder)
+        if (itemsError) throw itemsError
       }
 
-      return { success: true, order: completeOrder || undefined }
+      // Create complete order object
+      const completeOrder: Order = {
+        id: orderId,
+        order_number: orderNumber,
+        user_id: user.id,
+        status: orderData.status,
+        payment_status: orderData.payment_status,
+        payment_method: orderData.payment_method,
+        subtotal: orderData.subtotal,
+        shipping: orderData.shipping,
+        discount: orderData.discount,
+        total: orderData.total,
+        shipping_address: orderData.shipping_address,
+        billing_address: orderData.billing_address,
+        items: orderData.items,
+        notes: orderData.notes,
+        created_at: now,
+        updated_at: now
+      }
+
+      setOrders(prev => [completeOrder, ...prev])
+      setCurrentOrder(completeOrder)
+
+      return { success: true, order: completeOrder }
     } catch (error) {
       console.error('Error creating order:', error)
       return { success: false, error: 'Erro ao criar pedido' }
@@ -153,15 +174,18 @@ export function OrderProvider({ children }: { children: React.ReactNode }) {
   const updateOrderStatus = async (orderId: string, status: Order['status']): Promise<{ success: boolean; error?: string }> => {
     try {
       setLoading(true)
-      const { error } = await supabase
-        .from('orders')
-        .update({ 
-          status,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', orderId)
+      
+      if (supabase) {
+        const { error } = await supabase
+          .from('orders')
+          .update({ 
+            status,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', orderId)
 
-      if (error) throw error
+        if (error) throw error
+      }
 
       // Update local state
       setOrders(prev => prev.map(order => 
@@ -185,29 +209,34 @@ export function OrderProvider({ children }: { children: React.ReactNode }) {
 
   const getOrder = async (orderId: string): Promise<Order | null> => {
     try {
-      const { data: order, error } = await supabase
-        .from('orders')
-        .select(`
-          *,
-          order_items (
-            id,
-            product_id,
-            name,
-            price,
-            quantity,
-            image,
-            brand
-          )
-        `)
-        .eq('id', orderId)
-        .single()
+      if (supabase) {
+        const { data: order, error } = await supabase
+          .from('orders')
+          .select(`
+            *,
+            order_items (
+              id,
+              product_id,
+              name,
+              price,
+              quantity,
+              image,
+              brand
+            )
+          `)
+          .eq('id', orderId)
+          .single()
 
-      if (error) throw error
+        if (error) throw error
 
-      return {
-        ...order,
-        items: order.order_items || []
+        return {
+          ...order,
+          items: order.order_items || []
+        }
       }
+      
+      // Fallback to local state if no Supabase
+      return orders.find(order => order.id === orderId) || null
     } catch (error) {
       console.error('Error getting order:', error)
       return null
@@ -218,29 +247,34 @@ export function OrderProvider({ children }: { children: React.ReactNode }) {
     if (!user) return []
 
     try {
-      const { data: orders, error } = await supabase
-        .from('orders')
-        .select(`
-          *,
-          order_items (
-            id,
-            product_id,
-            name,
-            price,
-            quantity,
-            image,
-            brand
-          )
-        `)
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
+      if (supabase) {
+        const { data: orders, error } = await supabase
+          .from('orders')
+          .select(`
+            *,
+            order_items (
+              id,
+              product_id,
+              name,
+              price,
+              quantity,
+              image,
+              brand
+            )
+          `)
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
 
-      if (error) throw error
+        if (error) throw error
 
-      return orders.map(order => ({
-        ...order,
-        items: order.order_items || []
-      }))
+        return orders.map(order => ({
+          ...order,
+          items: order.order_items || []
+        }))
+      }
+      
+      // Fallback to local state if no Supabase
+      return orders.filter(order => order.user_id === user.id)
     } catch (error) {
       console.error('Error getting orders:', error)
       return []

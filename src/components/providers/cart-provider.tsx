@@ -141,7 +141,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }
 
   const syncCart = async () => {
-    if (!user) return
+    if (!user || !supabase) return
 
     try {
       setLoading(true)

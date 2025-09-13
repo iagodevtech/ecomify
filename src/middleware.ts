@@ -4,6 +4,12 @@ import type { NextRequest } from 'next/server'
 
 export async function middleware(req: NextRequest) {
   const res = NextResponse.next()
+  
+  // Skip middleware if Supabase is not configured
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL === 'SUA_URL_DO_SUPABASE_AQUI') {
+    return res
+  }
+  
   const supabase = createMiddlewareClient({ req, res })
 
   // Refresh session if expired - required for Server Components

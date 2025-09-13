@@ -38,7 +38,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
 
   // Load notifications when user logs in
   useEffect(() => {
-    if (user) {
+    if (user && supabase) {
       syncNotifications()
       // Set up real-time subscription
       const channel = supabase
@@ -66,7 +66,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   }, [user])
 
   const syncNotifications = async (): Promise<void> => {
-    if (!user) return
+    if (!user || !supabase) return
 
     try {
       setLoading(true)
@@ -88,6 +88,8 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   }
 
   const markAsRead = async (notificationId: string): Promise<void> => {
+    if (!supabase) return
+    
     try {
       const { error } = await supabase
         .from('notifications')
@@ -112,7 +114,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   }
 
   const markAllAsRead = async (): Promise<void> => {
-    if (!user) return
+    if (!user || !supabase) return
 
     try {
       const { error } = await supabase
@@ -139,6 +141,8 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   }
 
   const deleteNotification = async (notificationId: string): Promise<void> => {
+    if (!supabase) return
+    
     try {
       const { error } = await supabase
         .from('notifications')
@@ -154,6 +158,8 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   }
 
   const createNotification = async (notification: Omit<Notification, 'id' | 'created_at' | 'updated_at'>): Promise<void> => {
+    if (!supabase) return
+    
     try {
       const now = new Date().toISOString()
       const { data, error } = await supabase

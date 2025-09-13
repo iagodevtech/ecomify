@@ -95,8 +95,13 @@ const nextConfig = {
     ]
   },
 
-  // Configurações de output
-  output: 'standalone',
+  // Configurações de output para GitHub Pages (apenas em produção)
+  ...(process.env.NODE_ENV === 'production' && {
+    output: 'export',
+    distDir: 'out',
+    assetPrefix: '/ecomify',
+    basePath: '/ecomify',
+  }),
 
   // Configurações de trailing slash
   trailingSlash: false,

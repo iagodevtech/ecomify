@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { Inter, Orbitron } from 'next/font/google'
 import './globals.css'
-import { Providers } from '@/components/providers'
+import { Providers } from '@/components/providers/index'
 import { Toaster } from 'react-hot-toast'
 import { MatrixRain } from '@/components/effects/matrix-rain'
 import { ChatWidget } from '@/components/chat/chat-widget'
