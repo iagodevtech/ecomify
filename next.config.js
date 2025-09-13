@@ -120,12 +120,12 @@ const nextConfig = {
     CUSTOM_KEY: process.env.CUSTOM_KEY,
   },
 
-  // Configurações de i18n (internacionalização)
-  i18n: {
-    locales: ['pt-BR', 'en-US'],
-    defaultLocale: 'pt-BR',
-    localeDetection: false,
-  },
+  // Configurações de i18n removidas para compatibilidade com export estático
+  // i18n: {
+  //   locales: ['pt-BR', 'en-US'],
+  //   defaultLocale: 'pt-BR',
+  //   localeDetection: false,
+  // },
 
   // Webpack configuration
   webpack: (config, { dev, isServer }) => {
