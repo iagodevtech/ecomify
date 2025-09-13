@@ -26,12 +26,21 @@ jobs:
     - name: Build project
       run: npm run export
       env:
+        # Supabase Configuration
         NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
         NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+        
+        # Stripe Configuration
         NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
         STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
         STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
+        
+        # App Configuration
         NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL }}
+        NODE_ENV: production
+        
+        # Build Configuration
+        NEXT_TELEMETRY_DISABLED: 1
         
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
