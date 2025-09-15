@@ -1,0 +1,1 @@
+self.__BUILD_MANIFEST={__rewrites:{afterFiles:[{has:void 0,source:"/ecomify/api/stripe/webhook",destination:"/ecomify/api/webhooks/stripe"}],beforeFiles:[],fallback:[]},"/_error":["static/chunks/pages/_error-41b7ed050ee49bd2.js"],sortedPages:["/_app","/_error"]},self.__BUILD_MANIFEST_CB&&self.__BUILD_MANIFEST_CB();
