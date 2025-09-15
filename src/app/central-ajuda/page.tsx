@@ -21,7 +21,8 @@ import {
   Settings,
   Smartphone,
   Monitor,
-  Zap
+  Zap,
+  Heart
 } from 'lucide-react'
 import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'

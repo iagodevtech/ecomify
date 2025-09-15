@@ -7,7 +7,7 @@ import {
   CreditCard, 
   Smartphone, 
   FileText, 
-  Paypal,
+  Wallet,
   ArrowLeft,
   Check,
   AlertCircle,
@@ -82,7 +82,7 @@ export default function CheckoutPage() {
     {
       id: 'paypal',
       name: 'PayPal',
-      icon: Paypal,
+      icon: Wallet,
       description: 'Pague com sua conta PayPal'
     }
   ]

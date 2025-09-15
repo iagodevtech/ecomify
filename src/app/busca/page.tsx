@@ -26,7 +26,9 @@ import { useCart } from '@/components/providers'
 import { formatPrice } from '@/lib/stripe'
 import Link from 'next/link'
 
-export default function BuscaPage() {
+import { Suspense } from 'react'
+
+function BuscaContent() {
   const searchParams = useSearchParams()
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [sortBy, setSortBy] = useState('name')
@@ -310,5 +312,13 @@ export default function BuscaPage() {
 
       <Footer />
     </div>
+  )
+}
+
+export default function BuscaPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-dark-900 text-center pt-24 text-cyber-300">Carregando busca...</div>}>
+      <BuscaContent />
+    </Suspense>
   )
 }

@@ -53,7 +53,9 @@ import {
   Activity,
   Target,
   Award,
-  Gift
+  Gift,
+  Eye,
+  X
 } from 'lucide-react'
 import { AppLayout } from '@/components/layout/app-layout'
 import { Button } from '@/components/ui/button'

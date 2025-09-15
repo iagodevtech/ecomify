@@ -31,7 +31,8 @@ import {
   Target, 
   Crown, 
   Gem, 
-  Sparkles
+  Sparkles,
+  Clock
 } from 'lucide-react'
 import { AppLayout } from '@/components/layout/app-layout'
 import { Button } from '@/components/ui/button'
